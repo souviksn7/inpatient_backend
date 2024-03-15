@@ -6,6 +6,6 @@ const auth = require("../middleware/client.auth");
 
 const visitController = require("../controller/visit.controller");
 
-router.get('/getVisitData', auth, visitController.getVisitDataController);
+router.get('/getVisitData',  visitController.getFileNameController);
 
 module.exports = router;
