@@ -1,4 +1,4 @@
-const visitService = require("../service/visit.service");
+// const visitService = require("../service/visit.service");
 const businessLogic = require("../src/businessLogic")
 // const projectDirectory = process.cwd();
 const path = require('path');
