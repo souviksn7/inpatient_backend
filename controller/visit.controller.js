@@ -1,5 +1,5 @@
 // const visitService = require("../service/visit.service");
-const businessLogic = require("../src/businessLogic")
+const chopBusinessLogic = require("../src/chopBusinessLogic")
 // const projectDirectory = process.cwd();
 const path = require('path');
 const fs = require('fs');
@@ -8,9 +8,9 @@ const fs = require('fs');
 const getFileNameController = async (req,res) =>{
     try{ 
     //  console.log("tokenresponse:",)
-    //  console.log("state:",req.headers.state)
+    //  console.log("healthchart:",req.headers.healthchart)
 
-    const response = await businessLogic.buildApp(JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage))
+    const response = await chopBusinessLogic.buildApp(JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage))
     // const projectDirectory = process.cwd();
     // var response = []
    

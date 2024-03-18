@@ -4,6 +4,14 @@
 // import { log } from "../src/logger.js";
 // import { tokenResponse } from "../src/shared.js";
 
+const {
+    addEHRListener,
+    ehrHandshake,
+    ehrToken,
+    executeAction,
+    setEHRToken
+} = require('./ehrcomms')
+
 module.exports = {
     displayTransition: 750,
     chart: {
@@ -32,10 +40,7 @@ module.exports = {
             width: 55
         },
         dates : {
-            end: new Date(),
-            // focusStart: healthchart.dateMath(-36720000),
-            // line: healthchart.dateMath(-31536000),
-            // contextStart: healthchart.dateMath(-63072000)
+            
         },
         details: {
             image: "./images/arrow.png",
@@ -134,26 +139,26 @@ module.exports = {
                     label: "Asthma Action Plan",
                     labelLink: function(){
                         log("Navigate to Asthma Action Plan SmartForm", "info");
-                        // executeAction({
-                        //     action: "Epic.Clinical.Informatics.Web.LaunchActivity",
-                        //     args: {
-                        //         // PatientID: tokenResponse.patient,
-                        //         ActivityKey: "ASTHMA_ACTION_PLAN"
-                        //     }
-                        // });
+                        executeAction({
+                            action: "Epic.Clinical.Informatics.Web.LaunchActivity",
+                            args: {
+                                // PatientID: tokenResponse.patient,
+                                ActivityKey: "ASTHMA_ACTION_PLAN"
+                            }
+                        });
                     }
                 },
                 {
                     label: "Asthma Pathway",
                     labelLink: function(){
                         log("Navigate to Asthma Pathway", "info");
-                        // executeAction({
-                        //     action: "Epic.Clinical.Informatics.Web.LaunchActivity",
-                        //     args: {
-                        //         // PatientID: tokenResponse.patient,
-                        //         ActivityKey: "ASTHMA_IP_PATHWAY"
-                        //     }
-                        // });
+                        executeAction({
+                            action: "Epic.Clinical.Informatics.Web.LaunchActivity",
+                            args: {
+                                // PatientID: tokenResponse.patient,
+                                ActivityKey: "ASTHMA_IP_PATHWAY"
+                            }
+                        });
                     }
                 }
             ]
