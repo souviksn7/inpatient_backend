@@ -3,8 +3,11 @@ const { JSDOM } = require("jsdom");
 // const { timeSecond } = require('d3');
 // const customHosts = require('./customHosts')
 const {search } = require('./http')
-
-const { filterCarePlans,
+const {
+  dateFromString,
+  stringFromDate
+} = require('../utilities/utility')
+const { chopFilterCarePlans,
   getCarePlans ,
   setCarePlans} = require('./aap')
 
@@ -17,7 +20,7 @@ var {
   setState,
   getState
   
-} = require('./shared')
+} = require('./chopShared')
 
 var carePlans=[];
 
@@ -113,11 +116,11 @@ async function buildApp(tokenResponse1, state1, sessionStorage1) {
 
     //  console.log(chartConfig.chart.dates)
 
-    const result = await getPreliminaryData();
+    const result = await getChopPreliminaryData();
     console.log("getPrelimanary data ", result);
-    const result2 = await getRemainingData();
+    const result2 = await getChopRemainingData();
     console.log("Result:", result2);
-    const result3 = await process();
+    const result3 = await chopProcess();
     const response = {
       chartConfig,
       encounters,
@@ -134,17 +137,17 @@ async function buildApp(tokenResponse1, state1, sessionStorage1) {
   }
 }
 
-async function getPreliminaryData() {
+async function getChopPreliminaryData() {
   try {
     let deferreds = [];
-    deferreds.push.apply(deferreds,await  getEHRMedicationsRequest());
+    deferreds.push.apply(deferreds,await  getChopEHRMedicationsRequest());
     // console.log(tokenResponse)
     deferreds.push.apply(
       deferreds,
       await splitFhirRequest(
         3,
         today,
-        fhirMedCallback,
+        chopFhirMedCallback,
         "FHIR/R4/MedicationRequest",
         {
           patient: tokenResponse.patient,
@@ -201,7 +204,7 @@ async function getPreliminaryData() {
     // Split encounter request to speed up application load time
     deferreds.push.apply(
       deferreds,
-      await splitFhirRequest(3, today, encounterCallback, "FHIR/R4/Encounter", {
+      await splitFhirRequest(3, today, chopEncounterCallback, "FHIR/R4/Encounter", {
         patient: tokenResponse.patient,
         _include: "Encounter:Location",
       })
@@ -240,19 +243,19 @@ async function getPreliminaryData() {
   }
 }
 
-async function getRemainingData() {
+async function getChopRemainingData() {
   // console.log("in getRemaining Data, before filterLocation, encounters array ", encounters);
   // console.log("encMap before filterLocation ", encMap);
   var deferreds = [];
   console.log("hello i am in get remaining data");
-  // Filter locations to enable filtering during encounter processing
-  filterLocations();
+  // Filter locations to enable filtering during encounter chopProcessing
+  chopFilterLocations();
 
   // console.log("locationMap after filterLocation ", locationMap);
-  // console.log("encounters before preFilterEncounters ", encounters);
+  // console.log("encounters before chopPreFilterEncounters ", encounters);
   // Perform a pre-filtering of the encounters to obtain base information about each for encMap
   // and remove those that don't meet initial criteria. Will still need to filter based on dx and meds.
-  preFilterEncounters(deferreds);
+  chopPreFilterEncounters(deferreds);
 
   // // Obtain admin history for meds classified as "inpatient"
   // // This includes acute encounters (e.g. IP and ED) as well
@@ -264,11 +267,11 @@ async function getRemainingData() {
   // // }
 
   // // Attach encounter ID to meds in medIdMap
-  addMedContext();
+  chopAddMedContext();
 
   // // Filter on care plans;
    setCarePlans(carePlans)
-  filterCarePlans(encMap);
+  chopFilterCarePlans(encMap);
   carePlans = getCarePlans()
   // console.log("i changed it in my appjs",chartConfig.chart.dates)
 
@@ -282,7 +285,7 @@ async function getRemainingData() {
   return deferreds;
 }
 
-async function process() {
+async function chopProcess() {
   try {
     // Get time object. Date.now() is more efficient, which is
     // why we attempt to get this first, but it is not available
@@ -301,13 +304,13 @@ async function process() {
 
     // Waiting until remaining data is back to link
     // medications to encounters;
-    linkMedAdmin();
+    chopLinkMedAdmin();
 
     // Build medication visualization object to pass to visualization library
-    buildMedVisObj();
+    chopBuildMedVisObj();
 
-    // Post-process encounters after medications have been linked
-    postFilterEncounters();
+    // Post-chopProcess encounters after medications have been linked
+    chopPostFilterEncounters();
 
     // Filter external encounters
     // filterExternalEncounters();
@@ -316,7 +319,7 @@ async function process() {
     return;
     // render();
   } catch (error) {
-    console.log("process", error);
+    console.log("chopProcess", error);
     // chart.failure = true;
     // failureSplash();
     // log(error.stack, "error");
@@ -351,7 +354,7 @@ async function splitFhirRequest(
   }
 }
 
-function fhirMedCallback(meds, state, xhr) {
+function chopFhirMedCallback(meds, state, xhr) {
   try {
     if (xhr.status != 200) {
       // console.log("fhirmeds")
@@ -381,7 +384,7 @@ function fhirMedCallback(meds, state, xhr) {
   }
 }
 
-function encounterCallback(enc, state, xhr) {
+function chopEncounterCallback(enc, state, xhr) {
   try {
     // console.log("hererdsfsdkjhfkjs",xhr,state)
     if (xhr.status != 200) {
@@ -412,7 +415,7 @@ function encounterCallback(enc, state, xhr) {
   }
 }
 
-async function getEHRMedicationsRequest() {
+async function getChopEHRMedicationsRequest() {
   try {
     var deferreds = [];
     var grouper = [
@@ -462,7 +465,7 @@ async function getEHRMedicationsRequest() {
               }
               console.log("hiii I am in Grouper part");
               // Pre-filter immediately to prep for encounter linking.
-              preFilterMedications(meds.MedicationOrders, grouper.row);
+              chopPreFilterMedications(meds.MedicationOrders, grouper.row);
             } catch (error) {
               // chart.failure = true;
               console.log(error.stack, "error");
@@ -481,7 +484,7 @@ async function getEHRMedicationsRequest() {
 }
 
 // medication request function
-function preFilterMedications(medications, row) {
+function chopPreFilterMedications(medications, row) {
   // Looping through medications. Not using the filter method
   // since the data needs to be compressed based on medication type.
   medications.forEach(function (med) {
@@ -535,7 +538,7 @@ function preFilterMedications(medications, row) {
     }
 
     // Create an order ID map, which will accept the encounter ID link
-    // identified during the linking process and passed to the HealthChart
+    // identified during the linking chopProcess and passed to the HealthChart
     // visualization library
     medIdMap[ordId].start = start;
     medIdMap[ordId].startStr = startStr;
@@ -562,7 +565,7 @@ function preFilterMedications(medications, row) {
   });
 }
 
-function addMedContext() {
+function chopAddMedContext() {
   console.log("fhirMeds ", fhirMeds);
   fhirMeds.forEach(function (v) {
     var encId;
@@ -597,7 +600,7 @@ function addMedContext() {
   });
 }
 
-function linkMedAdmin() {
+function chopLinkMedAdmin() {
   // Loop on medication administration map
   _.each(medAdminMap, function (adminList, ordId) {
     // Check if the medication was administered at a clinic.
@@ -652,7 +655,7 @@ function linkMedAdmin() {
   });
 }
 
-function buildMedVisObj() {
+function chopBuildMedVisObj() {
   // Map to ensure we are only plotting a single mark per encounter
   // per medication class.
   var medMap = {
@@ -811,7 +814,7 @@ function checkDx(dxList) {
     return (asthmaDx && !croupDx);
 }
 
-function filterLocations() {
+function chopFilterLocations() {
   locations.forEach(function (v) {
     if (v.extension) {
       v.extension.forEach(function (ext, i) {
@@ -842,7 +845,7 @@ function filterLocations() {
   });
 }
 
-function preFilterEncounters(deferred) {
+function chopPreFilterEncounters(deferred) {
   encounters = encounters.filter(async function (resource) {
     // Check status of encounter. Encounters with unknown status can be discarded.
     // This is typically from billing encounters that aren't used for clinical care
@@ -857,13 +860,13 @@ function preFilterEncounters(deferred) {
     var end = (resource.end = dateFromString(resource.period.end));
     var endStr = stringFromDate(end);
 
-    // Do not process future encounters
+    // Do not chopProcess future encounters
     if (!start || start > today) {
       return false;
     }
 
     // Due to splitting of requests, the EHR can return duplicate entries
-    // if the encounter spans multiple days. Check if we've already processed this encounter
+    // if the encounter spans multiple days. Check if we've already chopProcessed this encounter
     if (encMap[resource.id]) {
       return false;
     }
@@ -992,7 +995,7 @@ function preFilterEncounters(deferred) {
                   return false;
                 }
                 // TODO - Future state could consider capturing the data
-                // and processing later
+                // and chopProcessing later
                 if (condition.code) {
                   condition.code.coding.forEach(function (dx) {
                     if (asthmaDxRegex.test(dx.code)) {
@@ -1090,7 +1093,7 @@ function preFilterEncounters(deferred) {
         key: "Location",
         value: resource.adtClassName,
       });
-      // Process all other visits
+      // chopProcess all other visits
     } else {
       // Souvik debug
       // console.log("resource.adtClass  " + resource.adtClass);
@@ -1225,7 +1228,7 @@ function isValidLocation(resource) {
   return false;
 }
 
-function postFilterEncounters() {
+function chopPostFilterEncounters() {
   // Loop over encounters after additional context has been added
   // to determine which encounters to include
   encounters = encounters.filter(function (resource) {
@@ -1284,33 +1287,7 @@ async function getEncDiagnosis(resource, deferred) {
   );
 }
 
-function dateFromString(dte) {
-  // If date is null, return null
-  if (!dte) {
-    return null;
-  }
-  // If a time zone exists, but is midnight, break the date into parts
-  // and remove the timezone. This date form is typically passed for
-  // on demand outpatient support encounters like telephone or messaging.
-  if (dte.indexOf("T00:00:00Z") >= 0 || dte.indexOf("T") < 0) {
-    // Split date into parts to avoid issues with time zones
-    var dateParts = dte.split("T")[0].split("-");
-    // Use date written as intial start time. Month is zero indexed.
-    return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-  }
-  return new Date(dte);
-}
 
-// Implemented this since toLocaleDateString() was adding a significant
-// amount of time in the EHR
-function stringFromDate(dte) {
-  // If date is null, return null
-  if (!dte) {
-    return null;
-  }
-  // Return date in MM/DD/YYYY format
-  return dte.getMonth() + 1 + "/" + dte.getDate() + "/" + dte.getFullYear();
-}
 
 module.exports = {
   buildApp,

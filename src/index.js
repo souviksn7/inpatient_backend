@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 // import router files
-const visitRouter = require('../routes/visit.routes')
+const healthchartRouter = require('../routes/healthchart.routes')
 const businessLogic = require('./chopBusinessLogic')
 
 // businessLogic.buildApp()
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // redirect to respective routing file
-app.use('/visits',visitRouter)
+app.use('/healthchart',healthchartRouter)
 
 const PORT = process.env.PORT || 3005;
 

@@ -4,8 +4,8 @@ const router = express.Router();
 // this is file to check that clientId is valid or not 
 // const auth = require("../middleware/client.auth");
 
-const visitController = require("../controller/visit.controller");
+const healthchartController = require("../controller/healthchart.controller");
 
-router.get('/getVisitData',  visitController.getFileNameController);
+router.get('/gethealthchartData',  healthchartController.gethealthchartDataController);
 
 module.exports = router;

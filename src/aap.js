@@ -1,6 +1,6 @@
 const chartConfig = require("./healthChartConfig");
 var carePlans = [];
-function filterCarePlans(encMap) {
+function chopFilterCarePlans(encMap) {
     // console.log(chartConfig.chart.dates)
     // chartConfig.chart.dates ={}
     carePlans = carePlans.filter(function(obj, index) {
@@ -55,7 +55,7 @@ function filterCarePlans(encMap) {
 
 module.exports =
 {
-    filterCarePlans,
+    chopFilterCarePlans,
     getCarePlans : () => carePlans,
     setCarePlans : (v) => carePlans = v
 }

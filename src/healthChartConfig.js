@@ -10,7 +10,7 @@ const {
     ehrToken,
     executeAction,
     setEHRToken
-} = require('./ehrcomms')
+} = require('./chopehrcomms')
 
 module.exports = {
     displayTransition: 750,

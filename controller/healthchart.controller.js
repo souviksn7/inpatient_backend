@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-const getFileNameController = async (req,res) =>{
+const gethealthchartDataController = async (req,res) =>{
     try{ 
     //  console.log("tokenresponse:",)
     //  console.log("healthchart:",req.headers.healthchart)
@@ -24,5 +24,5 @@ const getFileNameController = async (req,res) =>{
 
 
 module.exports = {
-    getFileNameController
+    gethealthchartDataController
 }
