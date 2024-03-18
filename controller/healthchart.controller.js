@@ -8,9 +8,10 @@ const fs = require('fs');
 const gethealthchartDataController = async (req,res) =>{
     try{ 
     //  console.log("tokenresponse:",)
-    //  console.log("healthchart:",req.headers.healthchart)
+    //  console.log("healthchart:",JSON.parse(req.headers.tokenresponse))
+  
 
-    const response = await chopBusinessLogic.buildApp(JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage))
+    const response = await chopBusinessLogic.buildApp(req.hospital_name,JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage))
     // const projectDirectory = process.cwd();
     // var response = []
    

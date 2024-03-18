@@ -72,7 +72,7 @@ function dateMath(offset, date) {
   return d3.timeSecond.offset(date, offset);
 }
 
-async function buildApp(tokenResponse1, state1, sessionStorage1) {
+async function buildApp(hospital,tokenResponse1, state1, sessionStorage1) {
   try {
     // console.log(tokenResponse1)
     // healthchart = healthchart1
@@ -115,12 +115,18 @@ async function buildApp(tokenResponse1, state1, sessionStorage1) {
       });
 
     //  console.log(chartConfig.chart.dates)
+    switch(hospital){
+      case 'CHOP':
+        const result = await getChopPreliminaryData();
+        console.log("getPrelimanary data ", result);
+        const result2 = await getChopRemainingData();
+        console.log("Result:", result2);
+        const result3 = await chopProcess();
+      default:
+        console.log("there is no hospital code for this")
+    }
 
-    const result = await getChopPreliminaryData();
-    console.log("getPrelimanary data ", result);
-    const result2 = await getChopRemainingData();
-    console.log("Result:", result2);
-    const result3 = await chopProcess();
+   
     const response = {
       chartConfig,
       encounters,
