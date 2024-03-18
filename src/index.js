@@ -5,7 +5,9 @@ require("dotenv").config();
 
 // import router files
 const visitRouter = require('../routes/visit.routes')
+const businessLogic = require('./chopBusinessLogic')
 
+// businessLogic.buildApp()
 // create express app
 const app = express();
 

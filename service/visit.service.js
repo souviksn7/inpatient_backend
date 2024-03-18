@@ -1,15 +1,15 @@
 const visitRepository = require("../respository/visit.repository")
 
-const getVisitDataService = async ()=>{
+const getFileNameService = async ()=>{
     try{
-        const result = await visitRepository.getVisitData();
-        
-        return result
+        const result = await visitRepository.getFileName();
+        if (result.rowCount == 0) return {};
+        else return result.rows;
     }catch (error) {
         return error;
       }
 }
 
 module.exports = {
-    getVisitDataService
+    getFileNameService
 }
