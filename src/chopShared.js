@@ -19,9 +19,20 @@ async function setTokenResponse(v) {
     // console.log("insharedjs",tokenResponse)
 }
 
+ function setcsnToFhirIdMap(v) {
+    // console.log("in shared js",v)
+    csnToFhirIdMap = v;
+    // console.log("insharedjs",tokenResponse)
+}
+function setcsnList(v){
+    csnList = v
+}
+
 module.exports = {
-    csnList,
-    csnToFhirIdMap,
+    getcsnList : () => csnList,
+    setcsnList,
+    getcsnToFhirIdMap: () => csnToFhirIdMap,
+    setcsnToFhirIdMap,
     setTokenResponse,
     today,
     getTokenResponse: () => tokenResponse,

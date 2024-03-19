@@ -1,28 +1,42 @@
 const { JSDOM } = require("jsdom");
 // const { method } = require("lodash")
 // const { timeSecond } = require('d3');
-// const customHosts = require('./customHosts')
-const {search } = require('./http')
+const customHosts = require("./chopcustomHosts");
+const { search } = require("./http");
+const { dateFromString, stringFromDate } = require("../utilities/utility");
 const {
-  dateFromString,
-  stringFromDate
-} = require('../utilities/utility')
-const { chopFilterCarePlans,
-  getCarePlans ,
-  setCarePlans} = require('./aap')
+  getcsnToDatMap,
+  getEncDat
+}=require('./chopdat');
+const {
+  addEHRListener,
+  ehrHandshake,
+  ehrToken,
+  executeAction,
+  setEHRToken
+} = require('./chopehrcomms')
+const  {
+  getExternalEncounters,
+  filterExternalEncounters
+} = require('./chophie')
+const { getAsthmaActionPlan,
+  getAsthmaCarePlan,chopFilterCarePlans, getCarePlans, setCarePlans } = require("./aap");
 
-var {
-  csnList,
-  csnToFhirIdMap,
-  setTokenResponse,
-  today,
-  getTokenResponse,
-  setState,
-  getState
-  
-} = require('./chopShared')
+  var {
+    getcsnList,
+    setcsnList,
+    getcsnToFhirIdMap,
+    setcsnToFhirIdMap,
+    setTokenResponse,
+    today,
+    getTokenResponse,
+    setState,
+    getState
+    
+  } = require('./chopShared')
 
-var carePlans=[];
+
+var carePlans = [];
 
 const _ = require("lodash");
 const jquery = require("jquery")(new JSDOM().window);
@@ -34,10 +48,9 @@ chartConfig.rows.forEach(function (v, i) {
 });
 var counterLookback;
 // var today = new Date();
-// var csnToFhirIdMap = {};
-// var csnList = [];
+var csnToFhirIdMap = {};
+var csnList = [];
 var state;
-
 
 var encounters = [];
 var medPlot = [];
@@ -65,29 +78,30 @@ let tokenResponse;
 let sessionStorage;
 // let healthchart;
 
-
 // Function for date math
 function dateMath(offset, date) {
   date = date || new Date();
   return d3.timeSecond.offset(date, offset);
 }
 
-async function buildApp(hospital,tokenResponse1, state1, sessionStorage1) {
+async function buildApp(hospital, tokenResponse1, state1, sessionStorage1) {
   try {
     // console.log(tokenResponse1)
     // healthchart = healthchart1
     // console.log(healthchart1.dateMath)
     await setTokenResponse(tokenResponse1);
-    tokenResponse = getTokenResponse()
+    csnToFhirIdMap = getcsnToFhirIdMap()
+    tokenResponse = getTokenResponse();
+    csnList = getcsnList;
     // console.log(",",tokenResponse)
     // tokenResponse = tokenResponse1
 
-    await setState(state1)
-    state = getState
+    await setState(state1);
+    state = getState;
     sessionStorage = sessionStorage1;
     const requestTime = Date.now(); // Measure request time
     // console.log("Request Time:", requestTime);
-   await import("d3")
+    await import("d3")
       .then((d3) => {
         // Function for date math
         function dateMath(offset, date) {
@@ -115,25 +129,25 @@ async function buildApp(hospital,tokenResponse1, state1, sessionStorage1) {
       });
 
     //  console.log(chartConfig.chart.dates)
-    switch(hospital){
-      case 'CHOP':
+    switch (hospital) {
+      case "CHOP":
+       
         const result = await getChopPreliminaryData();
         console.log("getPrelimanary data ", result);
         const result2 = await getChopRemainingData();
         console.log("Result:", result2);
         const result3 = await chopProcess();
       default:
-        console.log("there is no hospital code for this")
+        console.log("there is no hospital code for this");
     }
 
-   
     const response = {
       chartConfig,
       encounters,
       encMap,
       medPlot,
     };
-    console.log(response,"businessLogic Response")
+    console.log(response, "businessLogic Response");
     return response;
 
     // return "hii"; // Returning "hii" for now
@@ -146,7 +160,7 @@ async function buildApp(hospital,tokenResponse1, state1, sessionStorage1) {
 async function getChopPreliminaryData() {
   try {
     let deferreds = [];
-    deferreds.push.apply(deferreds,await  getChopEHRMedicationsRequest());
+    deferreds.push.apply(deferreds, await getChopEHRMedicationsRequest());
     // console.log(tokenResponse)
     deferreds.push.apply(
       deferreds,
@@ -210,31 +224,37 @@ async function getChopPreliminaryData() {
     // Split encounter request to speed up application load time
     deferreds.push.apply(
       deferreds,
-      await splitFhirRequest(3, today, chopEncounterCallback, "FHIR/R4/Encounter", {
-        patient: tokenResponse.patient,
-        _include: "Encounter:Location",
-      })
+      await splitFhirRequest(
+        3,
+        today,
+        chopEncounterCallback,
+        "FHIR/R4/Encounter",
+        {
+          patient: tokenResponse.patient,
+          _include: "Encounter:Location",
+        }
+      )
     );
 
     // souvik comment
-    // console.log("sessionstorage",customHosts[sessionStorage["env"]]) 
-    // if (customHosts[sessionStorage["env"]]) {
-    //     if (typeof getControlTool === "function") {
-    //         deferreds.push.apply(deferreds, getControlTool());
-    //     }
+    // console.log("sessionstorage",customHosts[sessionStorage["env"]])
+    if (customHosts[sessionStorage["env"]]) {
+      // if (typeof getControlTool === "function") {
+      //     deferreds.push.apply(deferreds, getControlTool());
+      // }
 
-    //     if (typeof getAsthmaActionPlan === "function") {
-    //         deferreds.push(getAsthmaActionPlan());
-    //     }
+      if (typeof getAsthmaActionPlan === "function") {
+        deferreds.push(getAsthmaActionPlan());
+      }
 
-    //     if (typeof getAsthmaCarePlan === "function") {
-    //         deferreds.push(getAsthmaCarePlan());
-    //     }
+      if (typeof getAsthmaCarePlan === "function") {
+        deferreds.push(getAsthmaCarePlan());
+      }
 
-    //     if (typeof getExternalEncounters === "function") {
-    //         deferreds.push(getExternalEncounters());
-    //     }
-    // }
+      if (typeof getExternalEncounters === "function") {
+        deferreds.push(getExternalEncounters(encounters));
+      }
+    }
 
     // return jquery.when.apply(jQuery, deferreds);
     // Execute all deferreds concurrently
@@ -276,16 +296,16 @@ async function getChopRemainingData() {
   chopAddMedContext();
 
   // // Filter on care plans;
-   setCarePlans(carePlans)
+  setCarePlans(carePlans);
   chopFilterCarePlans(encMap);
-  carePlans = getCarePlans()
+  carePlans = getCarePlans();
   // console.log("i changed it in my appjs",chartConfig.chart.dates)
 
-  // if (customHosts[sessionStorage.getItem("env")]) {
-  //     if (typeof getEncDat === "function" && csnList.length > 0) {
-  //         deferreds.push(getEncDat());
-  //     }
-  // }
+  if (customHosts[sessionStorage["env"]]) {
+      if (typeof getEncDat === "function" && csnList.length > 0) {
+          deferreds.push(getEncDat());
+      }
+  }
 
   await jquery.when.apply(jquery, deferreds);
   return deferreds;
@@ -319,7 +339,7 @@ async function chopProcess() {
     chopPostFilterEncounters();
 
     // Filter external encounters
-    // filterExternalEncounters();
+    filterExternalEncounters();
 
     // Build visualization
     return;
@@ -448,7 +468,7 @@ async function getChopEHRMedicationsRequest() {
       },
     ];
     grouper.forEach(async function (grouper) {
-      try{
+      try {
         deferreds.push(
           await search(
             "epic/2017/Clinical/Utility/GetMedications/GetMedications",
@@ -478,10 +498,10 @@ async function getChopEHRMedicationsRequest() {
             }
           })
         );
-      
-      return deferreds;
-      }catch(error){
-        console.log("error in groper", error)
+
+        return deferreds;
+      } catch (error) {
+        console.log("error in groper", error);
       }
     });
   } catch (error) {
@@ -514,11 +534,15 @@ function chopPreFilterMedications(medications, row) {
     var end = dateFromString(med.EndDateTime || med.EndDate);
 
     // Verify medications were written before the current time
-    if ((med.OrderMode == "Inpatient" && end && end < chartConfig.chart.dates.contextStart) ||
-    (med.OrderMode == "Outpatient" && (start > today || start < chartConfig.chart.dates.contextStart))
-) {
-    return;
-}
+    if (
+      (med.OrderMode == "Inpatient" &&
+        end &&
+        end < chartConfig.chart.dates.contextStart) ||
+      (med.OrderMode == "Outpatient" &&
+        (start > today || start < chartConfig.chart.dates.contextStart))
+    ) {
+      return;
+    }
 
     // Get order ID from the resource
     var ordId;
@@ -807,17 +831,17 @@ function chopBuildMedVisObj() {
 // // Validates that each encounter discharge diagnosis set
 // // includes asthma but not croup.
 function checkDx(dxList) {
-    var asthmaDx = false;
-    var croupDx = false;
-    dxList.forEach(function(dx) {
-        if (asthmaDxRegex.test(dx.code)) {
-            asthmaDx = true;
-        }
-        if (dx.text && croupDxRegex.test(dx.text)) {
-            croupDx = true;
-        }
-    });
-    return (asthmaDx && !croupDx);
+  var asthmaDx = false;
+  var croupDx = false;
+  dxList.forEach(function (dx) {
+    if (asthmaDxRegex.test(dx.code)) {
+      asthmaDx = true;
+    }
+    if (dx.text && croupDxRegex.test(dx.text)) {
+      croupDx = true;
+    }
+  });
+  return asthmaDx && !croupDx;
 }
 
 function chopFilterLocations() {
@@ -894,7 +918,7 @@ function chopPreFilterEncounters(deferred) {
           value: startStr,
         },
         "Full Visit Report": {
-          // link: visitReport,
+          link: visitReport,
         },
         Type: {},
       },
@@ -910,8 +934,10 @@ function chopPreFilterEncounters(deferred) {
         // Add to CSN list to obtain DATs, which are used to
         // link to encounter reports
         csnList.push(resource.csn);
+        setcsnList(csnList)
         // Add to CSN map to link care plan to encounter
         csnToFhirIdMap[resource.csn] = resource.id;
+        setcsnToFhirIdMap(csnToFhirIdMap)
       }
     });
 
@@ -1178,16 +1204,16 @@ function chopPreFilterEncounters(deferred) {
   });
   // Sorting encounter date map entries by CSN. May not be necessary anymore
   // but possibly helpful when linking admins to encounters.
-  _.each(encDateMap, function(v) {
-      v.sort(function(a, b) {
-          if ( a.csn < b.csn ) {
-            return -1;
-          }
-          if ( a.csn > b.csn ) {
-            return 1;
-          }
-          return 0;
-      });
+  _.each(encDateMap, function (v) {
+    v.sort(function (a, b) {
+      if (a.csn < b.csn) {
+        return -1;
+      }
+      if (a.csn > b.csn) {
+        return 1;
+      }
+      return 0;
+    });
   });
 }
 
@@ -1294,6 +1320,25 @@ async function getEncDiagnosis(resource, deferred) {
 }
 
 
+
+function visitReport(elem, data) {
+    try {
+      var csnToDatMap = getcsnToDatMap()
+        console.log(data.row + " encounter report click event.", "info");
+        executeAction({
+            action: "Epic.Clinical.Informatics.Web.LaunchActivity",
+            args: {
+                "ActivityKey":"REPORTVIEWER",
+                "Parameters":{
+                    "REPORTPROVIDER":"MR_REPORTS",
+                    "REPORTCONTEXT": "11^R99#,EPT," + tokenResponse.eptIdIn + "," + csnToDatMap[data._csn] + ",1"
+                }
+            }
+        });
+    } catch (error) {
+       log(error.stack, "error");
+    }
+}
 
 module.exports = {
   buildApp,
