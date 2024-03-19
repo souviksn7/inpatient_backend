@@ -92,7 +92,8 @@ async function buildApp(hospital, tokenResponse1, state1, sessionStorage1) {
     await setTokenResponse(tokenResponse1);
     csnToFhirIdMap = getcsnToFhirIdMap()
     tokenResponse = getTokenResponse();
-    // csnList = getcsnList;
+
+    csnList = getcsnList();
     // console.log(",",tokenResponse)
     // tokenResponse = tokenResponse1
 
