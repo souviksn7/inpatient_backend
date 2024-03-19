@@ -1,4 +1,4 @@
-const { getTokenResponse,getState} = require('./shared')
+const { getTokenResponse,getState} = require('./chopShared')
 
 
 const { JSDOM } = require("jsdom");
