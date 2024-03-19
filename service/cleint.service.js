@@ -1,5 +1,16 @@
 // const client = require('../connection/db')
+const { partition } = require('lodash');
 const clientRepository = require('../respository/client.repository')
+
+const countTableService = async () => {
+    try {
+        const result = await clientRepository.countTable();
+       
+        return result.rows;   
+    } catch (error) {
+        return error;
+    }
+}
 
 const checkClientIdService = async (clientId) =>{
     try {
@@ -12,6 +23,20 @@ const checkClientIdService = async (clientId) =>{
     }
 }
 
+const updateStatsService = async (patientId , clientId) =>{
+    
+    try{
+        
+     const result = await clientRepository.updateStats(patientId,clientId)
+     return result
+    }catch(error){
+        return error
+    }
+}
+
+
 module.exports = {
-    checkClientIdService
+    checkClientIdService,
+    updateStatsService,
+    countTableService
 }

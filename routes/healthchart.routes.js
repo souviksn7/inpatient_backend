@@ -5,7 +5,9 @@ const router = express.Router();
 const auth = require("../middleware/client.auth");
 
 const healthchartController = require("../controller/healthchart.controller");
+const clientController = require('../controller/client.controller')
 
 router.get('/gethealthchartData', auth, healthchartController.gethealthchartDataController);
+router.get('/getcounts', clientController.countTableController)
 
 module.exports = router;
