@@ -13,6 +13,7 @@ let tokenResponse,state;
 function search(endpoint, data, method, headers) {
     try {
         tokenResponse = getTokenResponse()
+        // console.log(tokenResponse)
         state = getState()
         // console.log(tokenResponse)
       method = method || "GET";

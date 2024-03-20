@@ -1,4 +1,5 @@
 const clientService = require('../service/cleint.service')
+const {search }= require('../src/http')
 let tokenResponse
 
 const countTableController = async (req,res) => {
@@ -34,11 +35,21 @@ const checkClientIdController = async (req,res) =>{
      
          const encodedPayload = parts[1];
          const decodedPayload = base64UrlDecode(encodedPayload);
-     
+    //    console.log(decodedPayload)
          return JSON.parse(decodedPayload);
      }
      let decodedPayload;
-     // Example usage
+    //  console.log(decodeURIComponent(tokenResponse.dob))
+    //  try{
+    //     console.log(search)
+    //     await search(`FHIR/R4/Encounter/${tokenResponse.encounter}`).then(function(data){
+    //         console.log(data.participant)
+    //      })
+    //  }
+    //  // Example usage
+    // catch(error){
+    //     console.log(error)
+    //  }
      const token = tokenResponse.access_token;  // Replace with your actual JWT
      try {
          decodedPayload = decodeJwt(token);
@@ -48,30 +59,34 @@ const checkClientIdController = async (req,res) =>{
      }
     //  console.log("decoded",decodedPayload)
         const response = await clientService.checkClientIdService(decodedPayload.client_id)
-        req.clientId = decodedPayload.client_id
+        req.clientId = response[0].id
+        req.state = JSON.parse(req.headers.state)
+        req.patientId = tokenResponse.patient
         req.hospital_name = response[0].hospital_name
         // console.log()
         return response[0]
         // res.status(200).send(response);
     } catch(error){
+        // console.log(error)
         // res.status(403).send({error:"ID not found"});
         return error
     }
 }
 
 
-const updateStatsController = async (req,res) =>{
+const updateCounterController = async (req,res) =>{
     try{
-        console.log("helloooo")
+        // console.log("helloooo")
        
-       const response = await clientService.updateStatsService(tokenResponse.patient,req.clientId)
+       const response = await clientService.updateCounterService(tokenResponse.patient,req.clientId)
        return response
     }catch(error){
-        return error
+        console.log("controller",error)
+        return {error}
     }
 }
 module.exports = {
     checkClientIdController,
-    updateStatsController,
+    updateCounterController,
     countTableController
 }
