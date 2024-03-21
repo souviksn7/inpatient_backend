@@ -258,11 +258,11 @@ async function getChopPreliminaryData() {
       }
     }
 
-    // return jquery.when.apply(jQuery, deferreds);
+    // return Promise.allSettled(deferreds);
     // Execute all deferreds concurrently
     console.log(" i am in getprelimanary data");
     // console.log(deferreds)
-    await jquery.when.apply(jquery, deferreds);
+    await Promise.allSettled(deferreds);
     return deferreds;
   } catch (error) {
     console.log("this is prelimanry error");
@@ -309,7 +309,7 @@ async function getChopRemainingData() {
       }
   }
 
-  await jquery.when.apply(jquery, deferreds);
+  await Promise.allSettled(deferreds);
   return deferreds;
 }
 
