@@ -133,11 +133,12 @@ async function buildApp(hospital, tokenResponse1, state1, sessionStorage1) {
     switch (hospital) {
       case "CHOP":
        
-        // const result = await getChopPreliminaryData();
-        // console.log("getPrelimanary data ", result);
-        // const result2 = await getChopRemainingData();
-        // console.log("Result:", result2);
-        // const result3 = await chopProcess();
+        const result = await getChopPreliminaryData();
+        console.log("getPrelimanary data ", result);
+        const result2 = await getChopRemainingData();
+        console.log("Result:", result2);
+        const result3 = await chopProcess();
+        break;
       default:
         console.log("there is no hospital code for this");
     }
@@ -257,11 +258,11 @@ async function getChopPreliminaryData() {
       }
     }
 
-    // return jquery.when.apply(jQuery, deferreds);
+    // return Promise.allSettled(deferreds);
     // Execute all deferreds concurrently
     console.log(" i am in getprelimanary data");
     // console.log(deferreds)
-    await jquery.when.apply(jquery, deferreds);
+    await Promise.allSettled(deferreds);
     return deferreds;
   } catch (error) {
     console.log("this is prelimanry error");
@@ -308,7 +309,7 @@ async function getChopRemainingData() {
       }
   }
 
-  await jquery.when.apply(jquery, deferreds);
+  await Promise.allSettled(deferreds);
   return deferreds;
 }
 

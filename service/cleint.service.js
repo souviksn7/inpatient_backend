@@ -1,6 +1,7 @@
 // const client = require('../connection/db')
 const { partition } = require('lodash');
-const clientRepository = require('../respository/client.repository')
+const clientRepository = require('../respository/client.repository');
+const { error } = require('jquery');
 
 const countTableService = async () => {
     try {
@@ -8,6 +9,7 @@ const countTableService = async () => {
        
         return result.rows;   
     } catch (error) {
+        // console.log(error)
         return error;
     }
 }
@@ -23,20 +25,21 @@ const checkClientIdService = async (clientId) =>{
     }
 }
 
-const updateStatsService = async (patientId , clientId) =>{
+const updateCounterService = async (patientId , clientId) =>{
     
     try{
         
-     const result = await clientRepository.updateStats(patientId,clientId)
+     const result = await clientRepository.updateCounter(patientId,clientId)
      return result
     }catch(error){
-        return error
+        // console.log(error)
+        return {error}
     }
 }
 
 
 module.exports = {
     checkClientIdService,
-    updateStatsService,
+    updateCounterService,
     countTableService
 }
