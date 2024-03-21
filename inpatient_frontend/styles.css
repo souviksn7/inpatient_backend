@@ -1,0 +1,165 @@
+/* Custom styles */
+.container {
+    margin-top: 50px;
+}
+
+/* Table styles */
+.table {
+    width: 50%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.navColor {
+    background-color: #e7ecf0;
+  }
+
+
+
+.custom-form {
+    margin-top: 20px;
+    margin-left: 25%;
+    margin-right: 25%;
+    width: 50%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #e7ecf0;
+}
+
+.custom-form .form-group {
+    margin-bottom: 20px; /* Add space between form fields */
+}
+
+.form-header {
+    margin-bottom: 20px;
+    margin-top: 40px;
+    text-align: center;
+}
+
+.submit-btn-color{
+    background-color: #23c6d2f1;
+}
+
+/* Dropdown container */
+
+/* Dropdown button */
+.dropdown-btn {
+    background-color: white;
+    padding: 10px 20px; /* Adjusted padding */
+    border: none;
+    cursor: pointer;
+    border-radius: 5px; /* Rounded edges */
+}
+
+/* Dropdown icon */
+.dropdown-icon {
+    margin-left: 5px;
+}
+
+/* Dropdown content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    width: 100%;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* check_statistics styles */
+
+
+/* Wrapper for date picker */
+
+.date-picker{
+    padding-bottom: 25px;
+}
+
+
+/* statistics table styles */
+
+/* Custom table styles */
+.table-container {
+    /* width: 100%; Adjust the width as needed */
+    
+}
+
+.table {
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #49c0e1; /* Light gray background color */
+    border-width: 2px;
+    border-color: #ddd;
+}
+
+/* Table header styles */
+.table thead th {
+    background-color: #169cb0; /* Dark gray background color */
+    color: #fff; /* White text color */
+    border-color: #454d55; /* Dark gray border color */
+}
+
+/* Table body styles */
+.table tbody tr {
+    background-color: #fff; /* White background color for table rows */
+}
+
+/* Alternate row color */
+.table tbody tr:nth-of-type(odd) {
+    background-color: #f2f2f2; /* Light gray background color for alternate rows */
+}
+
+.table td, .table th {
+    padding: 10px 15px; 
+    line-height: 1.5; 
+}
+
+.table th{
+    font-size: 14px;
+}
+
+.table td {
+    font-size: 14px;
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}

@@ -16,8 +16,7 @@ try{
 const addHospitalService = async (data) =>{
     try{
         const result = await frontendRepository.addHospital(data)
-    
-    
+
         return result
     }catch(error){
         return {error}
