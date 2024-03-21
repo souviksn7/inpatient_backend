@@ -7,14 +7,17 @@ const getHospitalDetails = async (clientId) => {
     const query = `SELECT * FROM clients;`
 
     const result = await client.query(query)
+
     if (result.rowCount>0){
+      await client.query("COMMIT");
         return result.rows
     }else{
+      await client.query("COMMIT");
         return {error:"No Hospital Registered"}
     }
 
   } catch (error) {
-    // await client.query("ROLLBACK");
+    await client.query("ROLLBACK");
     return { error };
   }
 };
@@ -27,6 +30,7 @@ const addHospital = async (data) =>{
     
         let query = `SELECT * FROM clients WHERE clientid_dev ='${data.clientid_dev}' or clientid_prod='${data.clientid_prod}'`;
         let result = await client.query(query)
+        await client.query("COMMIT");
         // console.log(result)
         if(result.rowCount>0){
             
@@ -37,6 +41,7 @@ const addHospital = async (data) =>{
             
     
             result = await client.query(query)
+            await client.query("COMMIT");
             console.log(result)
             return {message:'Hospital added successfully'}
         }
@@ -66,6 +71,7 @@ const getStats = async (data) =>{
     
         let query = `SELECT * FROM stats WHERE client_id ='${hospitalId}' and date='${formattedDate}'`;
         let result = await client.query(query)
+        await client.query("COMMIT");
         // console.log(result)
         if (result.rowCount>0){
             return result.rows
@@ -101,6 +107,7 @@ const addLisence = async (data) =>{
             
     
             result = await client.query(query)
+            await client.query("COMMIT");
             console.log(result)
             return {message:'Lisence added successfully'}
         }

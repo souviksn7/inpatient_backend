@@ -1,27 +1,3 @@
-// Dummy hospitals array
-const hospitals = [
-    {
-        "id": 1,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd110418159",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e355",
-        "hospital_name": "CHOP",
-        "description": null
-    },
-    {
-        "id": 2,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd1104181",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e55",
-        "hospital_name": "CHP",
-        "description": "jdfksjhfkjsdhkjf"
-    },
-    {
-        "id": 3,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd11041",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e5",
-        "hospital_name": "CP",
-        "description": "jdfksjhfkjsdhkjf"
-    }
-];
 
 function populateDropdown() {
     const dropdown = document.getElementById('hospitalDropdown');
@@ -30,15 +6,41 @@ function populateDropdown() {
     let defaultOption = document.createElement('option');
     defaultOption.textContent = "Select a Hospital";
     defaultOption.value = "";
+    let hospitals = [];
     dropdown.appendChild(defaultOption);
+    // fetch hospital data
+    fetch('http://localhost:3006/frontend/getHospitalData')
+    .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // debug
+        console.log("hospitals data", data);
+        // Assuming the response contains an array named 'hospitals'
+        hospitals = data;
+        // Now you can work with the 'hospitals' array
+
+        // debug
+        console.log("hospitals", hospitals);
+        hospitals.forEach((hospital) => {
+            // debug
+            console.log("in forEach loop");
+            let option = document.createElement('option');
+            option.textContent = hospital.hospital_name;
+            option.value = hospital.id;
+            dropdown.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+
+    // debug
 
     // Populate dropdown with hospitals
-    hospitals.forEach((hospital) => {
-        let option = document.createElement('option');
-        option.textContent = hospital.hospital_name;
-        option.value = hospital.id;
-        dropdown.appendChild(option);
-    });
 }
 
 function logSelectedOption() {
@@ -91,7 +93,8 @@ function setupFormSubmit() {
 }
 
 function sendPostRequest(data) {
-    fetch('http://localhost:3006/frontend/addLicense', {
+    console.log("in sendPostRequest data", data);
+    fetch('http://localhost:3006/frontend/addLisence', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
