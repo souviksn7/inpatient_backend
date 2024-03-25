@@ -1,3 +1,4 @@
+
 // Selecting the form element
 const form = document.querySelector('.custom-form');
 
@@ -36,6 +37,14 @@ form.addEventListener('submit', function(event) {
     })
     .then(response => {
         if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Hospital registration was successful.',
+                showConfirmButton: false, // Remove the confirm button
+                timer: 2000 // Automatically close after 1.5 seconds
+              });
+            form.reset();
             console.log('Hospital added successfully.');
             // You can perform further actions here after the request is successful
         } else {

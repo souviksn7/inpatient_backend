@@ -1,44 +1,59 @@
-// Dummy hospitals array
-const hospitals = [
-    {
-        "id": 1,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd110418159",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e355",
-        "hospital_name": "CHOP",
-        "description": null
-    },
-    {
-        "id": 2,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd1104181",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e55",
-        "hospital_name": "CHP",
-        "description": "jdfksjhfkjsdhkjf"
-    },
-    {
-        "id": 3,
-        "clientid_dev": "3ed56593-344b-449c-9f72-3fd11041",
-        "clientid_prod": "2b21c320-00ca-4eed-b166-fedfccd1e5",
-        "hospital_name": "CP",
-        "description": "jdfksjhfkjsdhkjf"
-    }
-];
+var statistics = []
+
 
 function populateDropdown() {
     const dropdown = document.getElementById('hospitalDropdown');
 
     // Create a default "Select" option
     let defaultOption = document.createElement('option');
-    defaultOption.textContent = "Select a Hospital";
+    defaultOption.textContent = "Select a Hospital*";
     defaultOption.value = "";
+    let hospitals = [];
     dropdown.appendChild(defaultOption);
+    // fetch hospital data
+    fetch('http://localhost:3006/frontend/getHospitalData')
+    .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // debug
+        // console.log("hospitals data", data);
+        // Assuming the response contains an array named 'hospitals'
+        hospitals = data;
+        // Now you can work with the 'hospitals' array
+
+        // sort hospitals by hospital name
+        hospitals.sort(function(hospital1, hospital2){
+            let hospital1Name = hospital1.hospital_name.toUpperCase();
+            let hospital2Name = hospital2.hospital_name.toUpperCase();
+
+            if (hospital1Name < hospital2Name) {
+                return -1;
+            }
+            if (hospital1Name > hospital2Name) {
+                return 1;
+            }
+            return 0;
+        })
+        // debug
+        // console.log("hospitals", hospitals);
+        hospitals.forEach((hospital) => {
+            let option = document.createElement('option');
+            option.textContent = hospital.hospital_name;
+            option.value = hospital.id;
+            dropdown.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+
+    // debug
 
     // Populate dropdown with hospitals
-    hospitals.forEach((hospital) => {
-        let option = document.createElement('option');
-        option.textContent = hospital.hospital_name;
-        option.value = hospital.id;
-        dropdown.appendChild(option);
-    });
 }
 
 function logSelectedOption() {
@@ -63,6 +78,12 @@ document.querySelector('.custom-form').addEventListener('submit', function(e) {
     const hospitalId = document.getElementById('hospitalDropdown').value;
     const date = document.querySelector('.date-picker input[type="date"]').value;
 
+    const date1 = new Date(date)
+    const year = date1.getFullYear();
+    const month = String(date1.getMonth() + 1).padStart(2, "0");
+    const day = String(date1.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+
     // Convert the date to the required format, if necessary
     const dateToSend = new Date(date).toDateString();
 
@@ -71,8 +92,6 @@ document.querySelector('.custom-form').addEventListener('submit', function(e) {
         hospitalId: parseInt(hospitalId), // Ensure it's an integer
         date: dateToSend
     };
-
-    console.log("body ", body);
 
     // Make the post request
     fetch('http://localhost:3006/frontend/getStats', {
@@ -84,7 +103,11 @@ document.querySelector('.custom-form').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Success:', data);
+        console.log("data", data);
+        // console.log('Success:', data);
+        statistics = data.statistics;
+        // console.log("statistics", statistics);
+        populateTable();
         // Handle success - you might want to display the statistics on the page
     })
     .catch((error) => {
@@ -95,71 +118,9 @@ document.querySelector('.custom-form').addEventListener('submit', function(e) {
 
 // statistics table
 
-var statistics = [
-    {
-        "id": 1,
-        "baseurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/",
-        "serverurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
-        "patient_id": "eOPSKZbz6YIgoilQprzPy0Q3",
-        "patient_fname": "undefined",
-        "patient_lname": "undefined",
-        "userid": "TESTINGUSER@EPIC.COM",
-        "hospital_name": "CHOP",
-        "dob": "9/9/1983",
-        "encounter_id": "eVffiE7SavpOc0PtATuBQWg3",
-        "date": "2024-03-20",
-        "timestamp": "Wed Mar 20 2024 18:18:39 GMT+0530 (India Standard Time)",
-        "client_id": 1
-    },
-    {
-        "id": 2,
-        "baseurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/",
-        "serverurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
-        "patient_id": "eOPSKZbz6YIgoilQprzPy0Q3",
-        "patient_fname": "undefined",
-        "patient_lname": "undefined",
-        "userid": "TESTINGUSER@EPIC.COM",
-        "hospital_name": "CHOP",
-        "dob": "9/9/1983",
-        "encounter_id": "eVffiE7SavpOc0PtATuBQWg3",
-        "date": "2024-03-20",
-        "timestamp": "Wed Mar 20 2024 18:23:34 GMT+0530 (India Standard Time)",
-        "client_id": 1
-    },
-    {
-        "id": 3,
-        "baseurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/",
-        "serverurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
-        "patient_id": "eOPSKZbz6YIgoilQprzPy0Q3",
-        "patient_fname": "undefined",
-        "patient_lname": "undefined",
-        "userid": "TESTINGUSER@EPIC.COM",
-        "hospital_name": "CHOP",
-        "dob": "9/9/1983",
-        "encounter_id": "eVffiE7SavpOc0PtATuBQWg3",
-        "date": "2024-03-20",
-        "timestamp": "Wed Mar 20 2024 18:30:16 GMT+0530 (India Standard Time)",
-        "client_id": 1
-    },
-    {
-        "id": 4,
-        "baseurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/",
-        "serverurl": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4",
-        "patient_id": "eOPSKZbz6YIgoilQprzPy0Q3",
-        "patient_fname": "undefined",
-        "patient_lname": "undefined",
-        "userid": "TESTINGUSER@EPIC.COM",
-        "hospital_name": "CHOP",
-        "dob": "9/9/1983",
-        "encounter_id": "eVffiE7SavpOc0PtATuBQWg3",
-        "date": "2024-03-20",
-        "timestamp": "Wed Mar 20 2024 18:32:12 GMT+0530 (India Standard Time)",
-        "client_id": 1
-    }
-];
-
 // Function to populate table rows with data
 function populateTable() {
+    // document.querySelector("#statisticsTable").style.display = "";
     var tableBody = document.getElementById('tableBody');
     var html = '';
 
@@ -184,4 +145,3 @@ function populateTable() {
 }
 
 // Call the function to populate the table
-populateTable();

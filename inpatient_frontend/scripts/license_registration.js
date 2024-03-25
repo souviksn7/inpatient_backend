@@ -1,10 +1,11 @@
+const form = document.querySelector('.custom-form');
 
 function populateDropdown() {
     const dropdown = document.getElementById('hospitalDropdown');
 
     // Create a default "Select" option
     let defaultOption = document.createElement('option');
-    defaultOption.textContent = "Select a Hospital";
+    defaultOption.textContent = "Select a Hospital*";
     defaultOption.value = "";
     let hospitals = [];
     dropdown.appendChild(defaultOption);
@@ -18,16 +19,29 @@ function populateDropdown() {
     })
     .then(data => {
         // debug
-        console.log("hospitals data", data);
+        // console.log("hospitals data", data);
         // Assuming the response contains an array named 'hospitals'
         hospitals = data;
         // Now you can work with the 'hospitals' array
 
+        // sort hospitals by hospital name
+        hospitals.sort(function(hospital1, hospital2){
+            let hospital1Name = hospital1.hospital_name.toUpperCase();
+            let hospital2Name = hospital2.hospital_name.toUpperCase();
+
+            if (hospital1Name < hospital2Name) {
+                return -1;
+            }
+            if (hospital1Name > hospital2Name) {
+                return 1;
+            }
+            return 0;
+        })
+
         // debug
-        console.log("hospitals", hospitals);
+        // console.log("hospitals", hospitals);
         hospitals.forEach((hospital) => {
             // debug
-            console.log("in forEach loop");
             let option = document.createElement('option');
             option.textContent = hospital.hospital_name;
             option.value = hospital.id;
@@ -68,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupFormSubmit() {
-    const form = document.querySelector('.custom-form');
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent the default form submission
 
@@ -102,9 +115,28 @@ function sendPostRequest(data) {
         body: JSON.stringify(data),
     })
     .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-        alert('License registration successful!');
+    .then((data) => {
+        console.log("data: ", data);
+        if(data.error != null){
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: data.error,
+                showConfirmButton: false, // Remove the confirm button
+                timer: 2000 // Automatically close after 1.5 seconds
+              });
+        }
+        else{
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: data.message,
+                showConfirmButton: false, // Remove the confirm button
+                timer: 2000 // Automatically close after 1.5 seconds
+              });
+              form.reset();
+        }
+        
     })
     .catch((error) => {
         console.error('Error:', error);

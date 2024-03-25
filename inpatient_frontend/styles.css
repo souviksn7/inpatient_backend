@@ -112,6 +112,11 @@
 
 /* statistics table styles */
 
+
+#statisticsTable{
+    /* display: none; */
+}
+
 /* Custom table styles */
 .table-container {
     /* width: 100%; Adjust the width as needed */
