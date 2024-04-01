@@ -65,7 +65,7 @@ const getStats = async (data) =>{
          const month = String(date.getMonth() + 1).padStart(2, "0");
          const day = String(date.getDate()).padStart(2, "0");
          const formattedDate = `${year}-${month}-${day}`;
-         console.log("hellooooo")
+        //  console.log("hellooooo")
 
         await client.query('BEGIN');
     
@@ -74,14 +74,11 @@ const getStats = async (data) =>{
         await client.query("COMMIT");
         // console.log(result)
         if (result.rowCount>0){
-            return result.rows
+            return {statistics:result.rows}
         }else{
             return {error:"No Logs Found"}
         }
-    
-     
-       
-    
+
       } catch (error) {
         console.log(error)
         await client.query("ROLLBACK");
