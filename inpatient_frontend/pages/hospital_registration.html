@@ -21,20 +21,20 @@
     <div class="container">
         <form class="custom-form">
             <div class="form-group">
-                <label for="hospitalName"><b>Hospital Name</b></label>
-                <input type="text" class="form-control" id="hospitalName" placeholder="Enter hospital name">
+                <label for="hospitalName"><b>Hospital Name<span style="color: red;">*</span></b></label>
+                <input type="text" class="form-control" id="hospitalName" placeholder="Enter hospital name" required>
             </div>
             <div class="form-group">
-                <label for="clientIdProd"><b>Client ID (Production)</b></label>
-                <input type="text" class="form-control" id="clientIdProd" placeholder="Enter client ID (production)">
+                <label for="clientIdProd"><b>Client ID (Production)<span style="color: red;">*</span></b></label>
+                <input type="text" class="form-control" id="clientIdProd" placeholder="Enter client ID (production)" required>
             </div>
             <div class="form-group">
-                <label for="clientIdDev"><b>Client ID (Development)</b></label>
-                <input type="text" class="form-control" id="clientIdDev" placeholder="Enter client ID (development)">
+                <label for="clientIdDev"><b>Client ID (Development)<span style="color: red;">*</span></b></label>
+                <input type="text" class="form-control" id="clientIdDev" placeholder="Enter client ID (development)" required>
             </div>
             <div class="form-group">
-                <label for="hospitalDescription"><b>Hospital Description</b></label>
-                <textarea class="form-control" id="hospitalDescription" rows="3" placeholder="Enter hospital description"></textarea>
+                <label for="hospitalDescription"><b>Hospital Description<span style="color: red;">*</span></b></label>
+                <textarea class="form-control" id="hospitalDescription" rows="3" placeholder="Enter hospital description" required></textarea>
             </div>
             <button type="submit" class="btn" style="background-color: #23c6d2f1;">Submit</button>
         </form>
@@ -42,5 +42,6 @@
 
     <script src="../templates/navbar.js"></script>
     <script src="../scripts/hospital_registration.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
 </body>
 </html>

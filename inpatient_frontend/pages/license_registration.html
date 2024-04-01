@@ -27,18 +27,19 @@
     <div class="container">
       <form class="custom-form">
 
-        <select id="hospitalDropdown" class="form-control">
+        <select id="hospitalDropdown" class="form-control" required>
           <!-- Options will be dynamically added here -->
         </select>
 
         <br>
         <div class="form-group">
-          <label for="maxHitLimit"><b>Enter max hit limit</b></label>
+          <label for="maxHitLimit"><b>Enter max hit limit<span style="color: red;">*</span></b></label>
           <input
             type="text"
             class="form-control"
             id="maxHitLimit"
             placeholder="Enter max hit limit"
+            required
           />
         </div>
 
@@ -50,5 +51,6 @@
 
     <script src="../templates/navbar.js"></script>
     <script src="../scripts/license_registration.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
   </body>
 </html>

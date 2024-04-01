@@ -26,11 +26,11 @@
 
     <div class="container">
       <form class="custom-form">
-        <select id="hospitalDropdown" class="form-control">
+        <select id="hospitalDropdown" class="form-control" required>
             <!-- Options will be dynamically added here -->
         </select>
         <br>
-        <b>Enter Date</b>
+        <b>Enter Date<span style="color: red;">*</span></b>
         <div class="date-picker">
             <input type="date" class = "form-control">
         </div>
@@ -41,9 +41,10 @@
       </form>
     </div>
     <br>
-    <br>
 
-    <div class="container mt-5">
+    <!-- Staistics table  -->
+ 
+    <div class="container mt-5" id="statisticsTable">
         <div class="table-container">
             <h2>Statistics Table</h2>
             <div class="table-responsive">
