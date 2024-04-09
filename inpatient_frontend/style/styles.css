@@ -26,9 +26,11 @@
 
 .navColor {
     background-color: #e7ecf0;
-  }
+}
 
-
+.home-body{
+    background-image: url('/inpatient_frontend/images/home-page-background.jpg');
+}
 
 .custom-form {
     margin-top: 20px;
@@ -53,24 +55,9 @@
 }
 
 .submit-btn-color{
-    background-color: #23c6d2f1;
+    background-color: #7d2ae8;
 }
 
-/* Dropdown container */
-
-/* Dropdown button */
-.dropdown-btn {
-    background-color: white;
-    padding: 10px 20px; /* Adjusted padding */
-    border: none;
-    cursor: pointer;
-    border-radius: 5px; /* Rounded edges */
-}
-
-/* Dropdown icon */
-.dropdown-icon {
-    margin-left: 5px;
-}
 
 /* Dropdown content */
 .dropdown-content {
@@ -126,16 +113,16 @@
 .table {
     border-radius: 10px;
     overflow: hidden;
-    background-color: #49c0e1; /* Light gray background color */
+    background-color: #7d2ae8; 
     border-width: 2px;
     border-color: #ddd;
 }
 
 /* Table header styles */
 .table thead th {
-    background-color: #169cb0; /* Dark gray background color */
-    color: #fff; /* White text color */
-    border-color: #454d55; /* Dark gray border color */
+    background-color: #e0dde4; 
+    color: #7d2ae8; 
+    border-color: #454d55; 
 }
 
 /* Table body styles */
@@ -168,3 +155,13 @@
 .table-responsive {
     overflow-x: auto;
 }
+
+.navbar-nav{
+    width: 95%;
+}
+/* .navbar.navColor {
+    background-color: #e9ecef; 
+}
+.nav-item.active {
+    background-color: #f0f0f0; 
+} */

@@ -111,7 +111,17 @@ document.querySelector('.custom-form').addEventListener('submit', function(e) {
         // Handle success - you might want to display the statistics on the page
     })
     .catch((error) => {
+
         console.error('Error:', error);
+        statistics = [];
+        populateTable();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'No data found',
+            showConfirmButton: false, // Remove the confirm button
+            timer: 2000 // Automatically close after 1.5 seconds
+          });
         // Handle error
     });
 });
@@ -140,7 +150,6 @@ function populateTable() {
         html += '<td>' + statistic.timestamp + '</td>';
         html += '</tr>';
     });
-
     tableBody.innerHTML = html;
 }
 

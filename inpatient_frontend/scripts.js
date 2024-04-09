@@ -1,38 +1,69 @@
-// Function to fetch data from API
-async function fetchData() {
-    try {
-        const response = await fetch('http://localhost:3006/healthchart/getcounts'); // Replace with your API endpoint
-        if (!response.ok) {
-            throw new Error('Failed to fetch data');
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        return [];
+// function loginSubmit() {
+//     // Redirect to Hospital Registraion page
+//     window.location.href = "./pages/hospital_registration.html";
+// }
+// function signupSubmit() {
+//     // Redirect to Hospital Registraion page
+//     window.location.href = "./pages/hospital_registration.html";
+// }
+
+// const { event } = require("jquery");
+
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    // Prevent form submission to avoid page reload
+    event.preventDefault();
+
+    // Get the form fields using FormData
+    var formData = new FormData(this);
+    
+    // Access the form fields using dot notation
+    var email = formData.get('email');
+    var password = formData.get('password');
+
+    // debug
+    console.log('Email:', email);
+    console.log('Password:', password);
+
+    if(email != "" && password != ""){
+        window.location.href = "./pages/hospital_registration.html";
     }
-}
+});
 
-// Function to populate the table with data
-async function populateTable() {
-    const tableBody = document.getElementById('tableBody');
-    tableBody.innerHTML = '';
+document.getElementById('signupForm').addEventListener('submit', function(event) {
+    // Prevent form submission to avoid page reload
+    event.preventDefault();
 
-    try {
-        const data = await fetchData();
-        data.forEach(rowData => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${rowData.client_id}</td>
-                <td>${rowData.patient_id}</td>
-                <td>${rowData.count}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error('Error populating table:', error);
+    // Get the form fields using FormData
+    var formData = new FormData(this);
+    
+    // Access the form fields using dot notation
+    var name = formData.get('name');
+    var email = formData.get('email');
+    var password = formData.get('password');
+
+    // Now you can use these values for further processing, such as sending them to a server for authentication
+    console.log('Name:', name);
+    console.log('Email:', email);
+    console.log('Password:', password);
+
+    if(name != "" && email != "" && password != ""){
+        window.location.href = "./pages/hospital_registration.html";
     }
-}
+    // Here you can add your signup logic, such as making an AJAX request to a server to create a new user
+    // Example:
+    /*
+    fetch('signup.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle response from the server
+        console.log(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+    */
+});
 
-// Populate the table when the page loads
-window.onload = populateTable;
