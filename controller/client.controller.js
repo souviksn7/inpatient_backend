@@ -63,6 +63,10 @@ const checkClientIdController = async (req,res) =>{
         req.state = JSON.parse(req.headers.state)
         req.patientId = tokenResponse.patient
         req.hospital_name = response[0].hospital_name
+
+        const path = await clientService.getConfigFilePathService(req.clientId)
+        // console.log(path.rows[0])
+        req.configPath = path.rows[0].filepath
         // console.log()
         return response[0]
         // res.status(200).send(response);

@@ -44,9 +44,32 @@ const addLisenceService = async (data) =>{
         return {error}
     }
 }
+
+
+const signupService = async(data) => {
+    try{
+        const result = await frontendRepository.signup(data)
+        return result
+
+    }catch(error){
+        return { error }
+    }
+}
+
+const loginService = async(data) => {
+    try{
+        const result = frontendRepository.login(data)
+        return result
+
+    }catch(error){
+        return { error }
+    }
+}
 module.exports = {
     getHospitalDataService,
     addHospitalService,
     getStatsService,
-    addLisenceService
+    addLisenceService,
+    signupService,
+    loginService
 }

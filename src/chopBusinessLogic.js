@@ -1,6 +1,13 @@
 const { JSDOM } = require("jsdom");
 // const { method } = require("lodash")
 // const { timeSecond } = require('d3');
+const fs = require('fs');
+const axios = require('axios');
+const path = require('path');
+
+
+
+let hospitalConfig;
 const customHosts = require("./chopcustomHosts");
 const { search } = require("./http");
 const { dateFromString, stringFromDate } = require("../utilities/utility");
@@ -84,8 +91,18 @@ function dateMath(offset, date) {
   return d3.timeSecond.offset(date, offset);
 }
 
-async function buildApp(hospital, tokenResponse1, state1, sessionStorage1) {
+async function buildApp(hospital, tokenResponse1, state1, sessionStorage1,configPath) {
   try {
+console.log("je;;ejerjoeijrio",configPath)
+
+    // readFile(configPath)
+    .then(data => {
+      hospitalConfig =  eval('(' + data + ')');
+      console.log('File content:', (hospitalConfig.medContextIndex));
+    })
+    .catch(error => {
+      console.error(error.message);
+    });
     // console.log(tokenResponse1)
     // healthchart = healthchart1
     // console.log(healthchart1.dateMath)
@@ -133,11 +150,11 @@ async function buildApp(hospital, tokenResponse1, state1, sessionStorage1) {
     switch (hospital) {
       case "CHOP":
        
-        const result = await getChopPreliminaryData();
-        console.log("getPrelimanary data ", result);
-        const result2 = await getChopRemainingData();
-        console.log("Result:", result2);
-        const result3 = await chopProcess();
+        // const result = await getChopPreliminaryData();
+        // console.log("getPrelimanary data ", result);
+        // const result2 = await getChopRemainingData();
+        // console.log("Result:", result2);
+        // const result3 = await chopProcess();
         break;
       default:
         console.log("there is no hospital code for this");
@@ -241,9 +258,9 @@ async function getChopPreliminaryData() {
     // souvik comment
     // console.log("sessionstorage",customHosts[sessionStorage["env"]])
     if (customHosts[sessionStorage["env"]]) {
-      // if (typeof getControlTool === "function") {
-      //     deferreds.push.apply(deferreds, getControlTool());
-      // }
+      if (typeof getControlTool === "function") {
+          deferreds.push.apply(deferreds, getControlTool());
+      }
 
       if (typeof getAsthmaActionPlan === "function") {
         deferreds.push(getAsthmaActionPlan());
@@ -452,13 +469,7 @@ async function getChopEHRMedicationsRequest() {
 
         row: "Biologic",
 
-        // data:JSON.stringify({
-        //     "PatientID": tokenResponse.patient,
-        //     "PatientIDType": "FHIR",
-        //     "GrouperID": "119944",
-        //     "NumberDaysToIncludeDiscontinuedAndEndedOrders": 731,
-        //     "ProfileView": "3"
-        // })
+   
       },
       {
         id: "113258",
@@ -598,7 +609,7 @@ function chopPreFilterMedications(medications, row) {
 }
 
 function chopAddMedContext() {
-  console.log("fhirMeds ", fhirMeds);
+  console.log("fhirMeds ", hospitalConfig.medContextIndex);
   fhirMeds.forEach(function (v) {
     var encId;
     if (v.resource.encounter && v.resource.encounter.reference) {
@@ -613,7 +624,7 @@ function chopAddMedContext() {
       return;
     }
     v.resource.identifier.forEach(function (id) {
-      if (id.system.indexOf(".7.2.798268") >= 0) {
+      if (id.system.indexOf(hospitalConfig.medContextIndex) >= 0) {
         if (medIdMap[id.value] && v.resource.encounter.reference) {
           medIdMap[id.value].encId = medIdMap[id.value].group = encId;
         }
@@ -677,7 +688,7 @@ function chopLinkMedAdmin() {
         if (encMap[medIdMap[ordId].group]) {
           admin.group = medIdMap[ordId].group;
         } else {
-          log(
+          console.log(
             "Could not link med administration to encounter: " + ordId,
             "warn"
           );
@@ -853,7 +864,7 @@ function chopFilterLocations() {
         ext.valueCodeableConcept.coding.forEach(function (coding, j) {
           if (
             locationMap[v.id] === undefined &&
-            coding.system.indexOf(".7.10.688867.4150") >= 0
+            coding.system.indexOf(hospitalConfig.filterLocationCodingIndex) >= 0
           ) {
             locationMap[v.id] = {
               name: v.name,
@@ -869,7 +880,7 @@ function chopFilterLocations() {
         if (locationMap[v.id] === undefined) {
           locationMap[v.id] = {};
         }
-        if (id.system && id.system.indexOf(".7.2.686980") >= 0) {
+        if (id.system && id.system.indexOf(hospitalConfig.filterLocationIdIndex) >= 0) {
           locationMap[v.id].internalId = id.value;
         }
       });
@@ -928,7 +939,7 @@ function chopPreFilterEncounters(deferred) {
 
     // Obtain contact serial number (EHR encounter ID)
     resource.identifier.forEach(function (id, j) {
-      if (id.system.indexOf(".7.3.698084.8") >= 0) {
+      if (id.system.indexOf(hospitalConfig.preFilterEncounterCsnIndex) >= 0) {
         // Add csn to encounter object
         resource.csn = id.value;
         encMap[resource.id]._csn = resource.csn;
@@ -951,10 +962,10 @@ function chopPreFilterEncounters(deferred) {
     // Extract encounter type and class (if they exist)
     resource.type.forEach(function (type) {
       type.coding.forEach(function (v) {
-        if (v.system.indexOf(".7.10.698084.30") >= 0) {
+        if (v.system.indexOf(hospitalConfig.preFilterEncounterTypeIndex) >= 0) {
           resource.contactType = +v.code;
           resource.contactName = v.display;
-        } else if (v.system.indexOf(".7.10.698084.10110") >= 0) {
+        } else if (v.system.indexOf(hospitalConfig.preFilterEncounterClassIndex) >= 0) {
           resource.adtClass = +v.code;
           resource.adtClassName = v.display;
         }
@@ -1340,6 +1351,39 @@ function visitReport(elem, data) {
     } catch (error) {
        log(error.stack, "error");
     }
+}
+
+
+async function readFileFromURL(url) {
+  try {
+    // console.log("hiiiiii")
+    const response = await axios.get(url, { responseType: 'text' });
+    console.log(response.data)
+    return response;
+  } catch (error) {
+    throw new Error('Error reading file from URL: ' + error.message);
+  }
+}
+
+// Function to read content from local file
+async function readFileFromLocalPath(filePath) {
+  try {
+    return await fs.promises.readFile(filePath, 'utf8');
+  } catch (error) {
+    throw new Error('Error reading local file: ' + error.message);
+  }
+}
+
+// Function to read file content based on input
+async function readFile(input) {
+  // console.log("hellooo")
+  if (input.startsWith('http://') || input.startsWith('https://')) {
+    // Input is a URL
+    return await readFileFromURL(input);
+  } else {
+    // Input is a local file path
+    return await readFileFromLocalPath(input);
+  }
 }
 
 module.exports = {

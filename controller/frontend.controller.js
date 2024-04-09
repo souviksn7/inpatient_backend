@@ -62,9 +62,34 @@ const addLisenceController = async (req,res) => {
     }
 }
 
+
+const signupController = async (req,res) =>{
+    try{
+     const response = await frontendService.signupService(req.body)
+     res.status(200).send(response)
+    }catch(error){
+        res.status(401).send(error)
+    }
+}
+
+
+const loginController = async (req,res) =>{
+    try{
+        const response = await frontendService.loginService(req.body)
+        res.status(200).send(response)
+    }catch(error){
+        res.status(401).send(error)
+    }
+}
+
+
+
+
 module.exports = {
     getHospitalDataController,
     addHospitalController,
     getStatsController,
-    addLisenceController
+    addLisenceController,
+    loginController,
+    signupController
 }
