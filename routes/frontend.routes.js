@@ -23,5 +23,8 @@ router.post('/addHospital',frontendController.addHospitalController)
 router.post('/getStats',frontendController.getStatsController)
 router.post('/addLisence',frontendController.addLisenceController)
 
+router.post('/signup',frontendController.signupController);
+router.post('/login',frontendController.loginController)
+
 
 module.exports = router;

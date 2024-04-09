@@ -38,8 +38,19 @@ const updateCounterService = async (patientId , clientId) =>{
 }
 
 
+const getConfigFilePathService = async (clientId) => {
+    try{
+        const result = await clientRepository.clientConfigPath(clientId)
+        return result
+
+    }catch(error){
+       return { error }
+    }
+}
+
 module.exports = {
     checkClientIdService,
     updateCounterService,
-    countTableService
+    countTableService,
+    getConfigFilePathService
 }

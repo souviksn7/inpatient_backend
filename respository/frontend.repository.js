@@ -1,4 +1,7 @@
 const client = require("../connection/db");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+require("dotenv").config();
 
 const getHospitalDetails = async (clientId) => {
   try {
@@ -120,9 +123,74 @@ const addLisence = async (data) =>{
 }
 
 
+const signup = async (data) => {
+  try {
+    await client.query("BEGIN");
+
+    // Check if the email already exists
+    let query = `SELECT * FROM users WHERE email='${data.email}'`;
+    let result = await client.query(query);
+
+    if (result.rowCount > 0) {
+      await client.query('END');
+      return { message: "Email Already Exists" };
+    } else {
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      // Insert the user into the database
+      query = `INSERT INTO users (name, email, password) VALUES ('${data.name}', '${data.email}', '${hashedPassword}')`;
+      result = await client.query(query);
+
+      // Generate JWT token
+      const token = jwt.sign({ email: data.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+
+      await client.query('COMMIT');
+
+      return { message: "SignUp Successfully", token: token };
+    }
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error(error);
+    return { error: error };
+  }
+}
+
+
+
+const login = async (data) => {
+  try {
+    let query = `SELECT * FROM users WHERE email='${data.email}'`;
+    let result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return { message: "User not found" };
+    }
+
+   
+    const user = result.rows[0];
+    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+
+    if (!isPasswordValid) {
+      return { message: "Invalid password" };
+    }
+
+   
+    const token = jwt.sign({ email: data.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+
+    return { message: "Login successful", token: token };
+  } catch (error) {
+    console.error(error);
+    return { error: error };
+  }
+}
+
+
 module.exports = {
   getHospitalDetails,
   addHospital,
   getStats,
-  addLisence
+  addLisence,
+  signup,
+  login
 };

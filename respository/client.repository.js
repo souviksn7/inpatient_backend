@@ -73,8 +73,21 @@ const updateCounter = async (patientId, clientId)=>{
   }
 
 }
+
+
+const clientConfigPath = async (clientId) => {
+  try{
+     await client.query("BEGIN")
+     const query = `SELECT * FROM hospitalconfig where hospital_id = ${clientId}`;
+     const result = await client.query(query)
+     return result
+  }catch(error){
+    return {error}
+  }
+}
 module.exports = {
   checkClientID,
   updateCounter,
-  countTable
+  countTable,
+  clientConfigPath
 };
