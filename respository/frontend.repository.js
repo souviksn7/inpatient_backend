@@ -138,7 +138,7 @@ const signup = async (data) => {
 
     if (result.rowCount > 0) {
       await client.query('END');
-      return { message: "Email Already Exists" };
+      return { error: "Email Already Exists" };
     } else {
       // Hash the password
       const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -169,7 +169,7 @@ const login = async (data) => {
     let result = await client.query(query);
 
     if (result.rows.length === 0) {
-      return { message: "User not found" };
+      return { error: "User not found" };
     }
 
    
@@ -177,13 +177,13 @@ const login = async (data) => {
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
     if (!isPasswordValid) {
-      return { message: "Invalid password" };
+      return { error: "Invalid password" };
     }
 
    
     const token = jwt.sign({ email: data.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-    return { message: "Login successful", data:{email:result.rows[0].email, name:result.rows[0].name}, token: token };
+    return { message: "Login successful", token: token };
   } catch (error) {
     console.error(error);
     return { error: error };
