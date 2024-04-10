@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require('../middleware/frontendAuth')
 
 // this is file to check that clientId is valid or not 
 // const auth = require("../middleware/client.auth");

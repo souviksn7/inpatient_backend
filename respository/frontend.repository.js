@@ -72,10 +72,15 @@ const getStats = async (data) =>{
 
         await client.query('BEGIN');
     
-        let query = `SELECT * FROM stats WHERE client_id ='${hospitalId}' and date='${formattedDate}'`;
+        let query = `SELECT s.*, c.count
+        FROM stats s
+        LEFT JOIN counter c ON s.client_id = c.client_id AND s.date = c.date_record
+        WHERE s.client_id = '${hospitalId}' AND s.date = '${formattedDate}';
+        `;
         let result = await client.query(query)
         await client.query("COMMIT");
         // console.log(result)
+        console.log(result.rows)
         if (result.rowCount>0){
             return {statistics:result.rows}
         }else{
