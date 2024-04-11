@@ -137,6 +137,7 @@ function populateTable() {
   statistics.forEach(function (statistic) {
     html += "<tr>";
     html += "<td>" + statistic.hospital_name + "</td>";
+    html += "<td>" + statistic.count + "</td>";
     html += "<td>" + statistic.client_id + "</td>";
     html += "<td>" + statistic.patient_fname + "</td>";
     html += "<td>" + statistic.patient_lname + "</td>";
@@ -152,5 +153,6 @@ function populateTable() {
   });
   tableBody.innerHTML = html;
 }
+
 
 // Call the function to populate the table

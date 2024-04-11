@@ -145,3 +145,5 @@ function sendPostRequest(data) {
       alert("An error occurred during license registration.");
     });
 }
+
+
