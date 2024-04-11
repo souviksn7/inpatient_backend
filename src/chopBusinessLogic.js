@@ -95,7 +95,7 @@ async function buildApp(hospital, tokenResponse1, state1, sessionStorage1,config
   try {
 console.log("je;;ejerjoeijrio",configPath)
 
-    // readFile(configPath)
+    readFile(configPath)
     .then(data => {
       hospitalConfig =  eval('(' + data + ')');
       console.log('File content:', (hospitalConfig.medContextIndex));
@@ -150,11 +150,11 @@ console.log("je;;ejerjoeijrio",configPath)
     switch (hospital) {
       case "CHOP":
        
-        // const result = await getChopPreliminaryData();
-        // console.log("getPrelimanary data ", result);
-        // const result2 = await getChopRemainingData();
-        // console.log("Result:", result2);
-        // const result3 = await chopProcess();
+        const result = await getChopPreliminaryData();
+        console.log("getPrelimanary data ", result);
+        const result2 = await getChopRemainingData();
+        console.log("Result:", result2);
+        const result3 = await chopProcess();
         break;
       default:
         console.log("there is no hospital code for this");
