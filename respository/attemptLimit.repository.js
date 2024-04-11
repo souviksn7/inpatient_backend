@@ -8,7 +8,7 @@ const attemptLimitRepository = async (clientId) => {
     // Check if the client exists
     let query = `SELECT * FROM clients WHERE id = '${clientId}'`;
     let result = await client.query(query);
-
+    // console.log("ejhrkjhkjhjk")
     if (result.rowCount > 0) {
       // Get the current date
       const currentDate = new Date();
@@ -43,6 +43,7 @@ const attemptLimitRepository = async (clientId) => {
       return { error: "No match found for the client" };
     }
   } catch (error) {
+    console.log("error",error)
     await client.query("ROLLBACK");
     return { error };
   }

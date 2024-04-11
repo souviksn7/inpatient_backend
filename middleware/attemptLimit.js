@@ -4,8 +4,9 @@ const clientController = require("../controller/client.controller")
 const attemptLimit = async (req,res,next) => {
 // console.log(req.patientId)
 try{
-   
+  //  console.log("ejhfkjehfkjdhkfj")
     const response = await attemptLimitController.checkAttemptLimit(req,res)
+    console.log(response)
     if(response.error){
         res.status(401).send({error:response.error})
     }else{
