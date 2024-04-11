@@ -68,7 +68,7 @@ const getStats = async (data) =>{
          const month = String(date.getMonth() + 1).padStart(2, "0");
          const day = String(date.getDate()).padStart(2, "0");
          const formattedDate = `${year}-${month}-${day}`;
-        //  console.log("hellooooo")
+      
 
         await client.query('BEGIN');
     
@@ -152,7 +152,7 @@ const signup = async (data) => {
 
       await client.query('COMMIT');
 
-      return { message: "SignUp Successfully",data:{email:data.email, name:data.name}, token: token };
+      return { success: "SignUp Successfully",data:{email:data.email, name:data.name}, token: token };
     }
   } catch (error) {
     await client.query('ROLLBACK');
@@ -183,7 +183,8 @@ const login = async (data) => {
    
     const token = jwt.sign({ email: data.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-    return { message: "Login successful", token: token };
+    return { success: "Login successful", data:{email:result.rows[0].email, name:result.rows[0].name}, token: token };
+
   } catch (error) {
     console.error(error);
     return { error: error };

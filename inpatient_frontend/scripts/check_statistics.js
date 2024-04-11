@@ -105,11 +105,16 @@ document.querySelector(".custom-form").addEventListener("submit", function (e) {
     .then((response) => response.json())
     .then((data) => {
       console.log("data", data);
-      // console.log('Success:', data);
       statistics = data.statistics;
-      // console.log("statistics", statistics);
-      populateTable();
-      // Handle success - you might want to display the statistics on the page
+
+      // Display loader
+      document.querySelector(".loader-container").style.display = "flex";
+      // populate statistics after 500ms
+      setTimeout(function () {
+        // display statistics
+        document.querySelector(".loader-container").style.display = "none";
+        populateTable();
+      }, 500);
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -153,6 +158,5 @@ function populateTable() {
   });
   tableBody.innerHTML = html;
 }
-
 
 // Call the function to populate the table

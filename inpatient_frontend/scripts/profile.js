@@ -1,5 +1,5 @@
 // // profile information handle
-document.getElementById("name").value = localStorage.getItem("loggedInEmail");
+document.getElementById("name").value = localStorage.getItem("loggedInName");
 document.getElementById("email").value = localStorage.getItem("loggedInEmail");
 
 // handle logout

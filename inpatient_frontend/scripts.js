@@ -58,9 +58,8 @@
                 timer: 2000,
               });
               // login credentials (global variables)
-
-              localStorage.setItem("loggedInEmail", "example@email");
-              localStorage.setItem("password", "examplePassword");
+              localStorage.setItem("loggedInName", data.data.name);
+              localStorage.setItem("loggedInEmail", data.data.email);
 
               // window.loginDetails = { email: "loginEmail", password: "loginPassword" };
 
@@ -141,6 +140,10 @@
                 showConfirmButton: false, // Remove the confirm button
                 timer: 2000,
               });
+              
+              // login credentials (global variables)
+              localStorage.setItem("loggedInName", data.data.name);
+              localStorage.setItem("loggedInEmail", data.data.email);
 
               setTimeout(() => {
                 window.location.href = "./pages/hospital_registration.html";

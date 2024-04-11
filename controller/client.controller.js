@@ -59,19 +59,20 @@ const checkClientIdController = async (req,res) =>{
      }
     //  console.log("decoded",decodedPayload)
         const response = await clientService.checkClientIdService(decodedPayload.client_id)
+        console.log(response)
         req.clientId = response[0].id
         req.state = JSON.parse(req.headers.state)
         req.patientId = tokenResponse.patient
         req.hospital_name = response[0].hospital_name
 
         const path = await clientService.getConfigFilePathService(req.clientId)
-        // console.log(path.rows[0])
+        // console.log(path)
         req.configPath = path.rows[0].filepath
-        // console.log()
-        return response[0]
-        // res.status(200).send(response);
+        // console.log("heloo",response)
+        console.log(req.configPath)
+        return response[0]       // res.status(200).send(response);
     } catch(error){
-        // console.log(error)
+        console.log("erro",error)
         // res.status(403).send({error:"ID not found"});
         return error
     }
