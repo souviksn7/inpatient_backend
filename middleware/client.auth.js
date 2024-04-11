@@ -5,6 +5,7 @@ const auth = async (req, res, next) => {
     
     const response = await clientController.checkClientIdController(req, res);
     // console.log(response)
+    // console.log(response)
     if (!response.id) {
       res.status(401).send({ error: "ClientId is not Registered" });
       return

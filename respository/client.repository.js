@@ -17,6 +17,7 @@ const countTable = async () => {
 
 const checkClientID = async (clientId) => {
   try {
+    // console.log(clientId)
     await client.query("BEGIN");
     const query = `SELECT * fROM clients WHERE clientid_dev='${clientId}'`;
     // console.log(query);
@@ -67,7 +68,7 @@ const updateCounter = async (patientId, clientId)=>{
   //  console.log(finalresult)
     return finalresult;
   }catch(error){
-    // console.log(error)
+    console.log(error)
     await client.query("ROLLBACK");
     return {error};
   }
@@ -78,6 +79,7 @@ const updateCounter = async (patientId, clientId)=>{
 const clientConfigPath = async (clientId) => {
   try{
      await client.query("BEGIN")
+    //  console.log(clientId)
      const query = `SELECT * FROM hospitalconfig where hospital_id = ${clientId}`;
      const result = await client.query(query)
      return result
