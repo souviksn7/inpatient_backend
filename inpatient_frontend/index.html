@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <title>Tile Health</title>
     <link rel="stylesheet" href="./style/home-page-style.css" />
     <!-- Link to CSS file -->
@@ -130,6 +133,17 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Function to handle the popstate event (back button click)
+      window.addEventListener("popstate", function (event) {
+        // Check if the current URL is index.html
+        if (window.location.pathname === "/index.html") {
+          // Add a new history state to prevent leaving the page
+          history.pushState(null, null, window.location.href);
+        }
+      });
+    </script>
 
     <script src="scripts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>

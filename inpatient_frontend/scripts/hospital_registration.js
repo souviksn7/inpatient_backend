@@ -1,3 +1,12 @@
+function setPreviousPage(){
+    // Get the element by its ID
+  var element = document.getElementById("hospitalRegistration_a");
+            
+  // Change the opacity to 1(100%)
+  element.style.opacity = "1";
+    localStorage.setItem("previousUrl", window.location.pathname);
+}
+setPreviousPage();
 
 // Selecting the form element
 const form = document.querySelector('.custom-form');
