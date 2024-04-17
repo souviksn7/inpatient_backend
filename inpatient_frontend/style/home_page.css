@@ -3,6 +3,7 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
 }
 .leftCard {
   width: 700px; 
@@ -11,6 +12,7 @@
 .rightCard {
   width: 700px; 
   height: 1400px;
+  background-image: url('/inpatient_frontend/images/card-background.png');
 }
 
 .container-homepage {
@@ -75,5 +77,19 @@
     margin-left: 230px;
     border-radius: 15px;
     height: 100px;
-    width: 300px;
+    width: 300px; 
+}
+
+#hopital-stat-button,
+#hospital-registration-button,
+#license-registraion-button,
+#add-config-button {
+  transition: transform 0.3s ease; /* Add transition effect */
+}
+
+#hopital-stat-button:hover,
+#hospital-registration-button:hover,
+#license-registraion-button:hover,
+#add-config-button:hover {
+  transform: translateY(-10px); /* Move button 5px up on hover */
 }
