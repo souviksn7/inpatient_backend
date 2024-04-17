@@ -7,11 +7,14 @@ function dateFromString(dte) {
     // and remove the timezone. This date form is typically passed for
     // on demand outpatient support encounters like telephone or messaging.
     if (dte.indexOf("T00:00:00Z") >= 0 || dte.indexOf("T") < 0) {
+      // console.log("sfjdhfkjdhkfj")
       // Split date into parts to avoid issues with time zones
       var dateParts = dte.split("T")[0].split("-");
       // Use date written as intial start time. Month is zero indexed.
       return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
     }
+    // console.log( "sdfhsdkjfhkjdshfkj",new Date(dte))
+    
     return new Date(dte);
   }
   
