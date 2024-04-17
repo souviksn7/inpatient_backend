@@ -25,7 +25,9 @@ router.post('/getStats',frontendController.getStatsController)
 router.post('/addLisence',frontendController.addLisenceController)
 
 router.post('/signup',frontendController.signupController);
-router.post('/login',frontendController.loginController)
+router.post('/login',frontendController.loginController);
+
+router.post('/addConfig',frontendController.addConfigController);
 
 
 module.exports = router;

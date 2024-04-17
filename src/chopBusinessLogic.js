@@ -1,47 +1,45 @@
 const { JSDOM } = require("jsdom");
 // const { method } = require("lodash")
 // const { timeSecond } = require('d3');
-const fs = require('fs');
-const axios = require('axios');
-const path = require('path');
-
-
+const fs = require("fs");
+const axios = require("axios");
+const path = require("path");
 
 let hospitalConfig;
 const customHosts = require("./chopcustomHosts");
 const { search } = require("./http");
 const { dateFromString, stringFromDate } = require("../utilities/utility");
-const {
-  getcsnToDatMap,
-  getEncDat
-}=require('./chopdat');
+const { getcsnToDatMap, getEncDat } = require("./chopdat");
 const {
   addEHRListener,
   ehrHandshake,
   ehrToken,
   executeAction,
-  setEHRToken
-} = require('./chopehrcomms')
-const  {
+  setEHRToken,
+} = require("./chopehrcomms");
+const {
   getExternalEncounters,
-  filterExternalEncounters
-} = require('./chophie')
-const { getAsthmaActionPlan,
-  getAsthmaCarePlan,chopFilterCarePlans, getCarePlans, setCarePlans } = require("./aap");
+  filterExternalEncounters,
+} = require("./chophie");
+const {
+  getAsthmaActionPlan,
+  getAsthmaCarePlan,
+  chopFilterCarePlans,
+  getCarePlans,
+  setCarePlans,
+} = require("./aap");
 
-  var {
-    getcsnList,
-    setcsnList,
-    getcsnToFhirIdMap,
-    setcsnToFhirIdMap,
-    setTokenResponse,
-    today,
-    getTokenResponse,
-    setState,
-    getState
-    
-  } = require('./chopShared')
-
+var {
+  getcsnList,
+  setcsnList,
+  getcsnToFhirIdMap,
+  setcsnToFhirIdMap,
+  setTokenResponse,
+  today,
+  getTokenResponse,
+  setState,
+  getState,
+} = require("./chopShared");
 
 var carePlans = [];
 
@@ -91,69 +89,76 @@ function dateMath(offset, date) {
   return d3.timeSecond.offset(date, offset);
 }
 
-async function buildApp(hospital, tokenResponse1, state1, sessionStorage1,configPath) {
+async function buildApp(
+  hospital,
+  tokenResponse1,
+  state1,
+  sessionStorage1,
+  config
+) {
   try {
-console.log("je;;ejerjoeijrio",configPath)
+    csnToFhirIdMap = {};
+    csnList = [];
+    state;
 
-    readFile(configPath)
-    .then(data => {
-      hospitalConfig =  eval('(' + data + ')');
-      console.log('File content:', (hospitalConfig.medContextIndex));
-    })
-    .catch(error => {
-      console.error(error.message);
-    });
-    // console.log(tokenResponse1)
-    // healthchart = healthchart1
-    // console.log(healthchart1.dateMath)
+    encounters = [];
+    medPlot = [];
+    locations = [];
+    fhirMeds = [];
+
+    locationMap = {};
+    encMap = {};
+    encDateMap = {};
+    medIdMap = {};
+
+    acuteCareList = [];
+
+    medAdminList = [];
+    medAdminMap = {};
+
+    hospitalProblemMap = {};
+
+    hospitalConfig = config;
+
     await setTokenResponse(tokenResponse1);
-    csnToFhirIdMap = getcsnToFhirIdMap()
+    csnToFhirIdMap = getcsnToFhirIdMap();
     tokenResponse = getTokenResponse();
 
     csnList = getcsnList();
-    // console.log(",",tokenResponse)
-    // tokenResponse = tokenResponse1
 
     await setState(state1);
     state = getState;
     sessionStorage = sessionStorage1;
-    const requestTime = Date.now(); // Measure request time
-    // console.log("Request Time:", requestTime);
+    const requestTime = Date.now(); 
     await import("d3")
       .then((d3) => {
-        // Function for date math
+       
         function dateMath(offset, date) {
           date = date || new Date();
           return d3.timeSecond.offset(date, offset);
         }
 
-        // Example usage
         var dates = {
           end: new Date(),
           focusStart: dateMath(-36720000),
           line: dateMath(-31536000),
           contextStart: dateMath(-63072000),
         };
-        // console.log(dates)
         chartConfig.chart.dates = dates;
         counterLookback = chartConfig.chart.dates.line;
-        // const currentDate = new Date();
-        // const newDate = dateMath(10, currentDate); // Adding 10 seconds to the current date
-        // console.log(newDate);
+        
       })
       .catch((error) => {
-        // Handle errors
+       
         console.error("Error loading d3:", error);
       });
 
-    //  console.log(chartConfig.chart.dates)
+    
     switch (hospital) {
       case "CHOP":
-       
         const result = await getChopPreliminaryData();
-        console.log("getPrelimanary data ", result);
+       
         const result2 = await getChopRemainingData();
-        console.log("Result:", result2);
         const result3 = await chopProcess();
         break;
       default:
@@ -166,13 +171,13 @@ console.log("je;;ejerjoeijrio",configPath)
       encMap,
       medPlot,
     };
-    // console.log(response, "businessLogic Response");
+
+    console.log("businessLogic Response");
     return response;
 
-    // return "hii"; // Returning "hii" for now
+    
   } catch (error) {
-    console.log("Error:", error); // Log the error
-    // throw error; // Throw the error for handling elsewhere
+    console.log("Error:", error);
   }
 }
 
@@ -180,7 +185,7 @@ async function getChopPreliminaryData() {
   try {
     let deferreds = [];
     deferreds.push.apply(deferreds, await getChopEHRMedicationsRequest());
-    // console.log(tokenResponse)
+   
     deferreds.push.apply(
       deferreds,
       await splitFhirRequest(
@@ -194,8 +199,7 @@ async function getChopPreliminaryData() {
       )
     );
 
-    //   // console.log(deferreds)
-    //   // Add other calls
+ 
     try {
       deferreds.push(
         await search("FHIR/R4/List", {
@@ -203,12 +207,7 @@ async function getChopPreliminaryData() {
           patient: tokenResponse.patient,
         }).then(function (bundle, state, xhr) {
           try {
-            console.log(bundle);
-
-            // Add response to list reference. Will be used after all responses
-            // are returned to link medications to encounters. Must wait for all
-            // responses based on the limitations of the "list" resource, which
-            // doesn't specify a value for "medication started at visit".
+            
             if (!bundle.entry) {
               return;
             }
@@ -217,8 +216,7 @@ async function getChopPreliminaryData() {
                 return;
               }
 
-              // Store a reference to the FHIR encounter ID so we can establish
-              // a link between this problem and the encounter.
+           
               var encId = list.resource.encounter.reference.replace(
                 "Encounter/",
                 ""
@@ -232,7 +230,7 @@ async function getChopPreliminaryData() {
               });
             });
           } catch (error) {
-            // chart.failure = true;
+      
             console.log(error.stack, "error");
           }
         })
@@ -240,26 +238,26 @@ async function getChopPreliminaryData() {
     } catch (error) {
       console.log("hospiatal problem error ", error);
     }
-    // Split encounter request to speed up application load time
+    
     deferreds.push.apply(
       deferreds,
-      await splitFhirRequest(
-        3,
-        today,
-        chopEncounterCallback,
-        "FHIR/R4/Encounter",
-        {
-          patient: tokenResponse.patient,
-          _include: "Encounter:Location",
-        }
-      )
+      await chopEncounterCallback(visitData, "random", { status: 200 })
+      // await splitFhirRequest(
+      //   3,
+      //   today,
+      //   chopEncounterCallback,
+      //   "FHIR/R4/Encounter",
+      //   {
+      //     patient: tokenResponse.patient,
+      //     _include: "Encounter:Location",
+      //   }
+      // )
     );
 
-    // souvik comment
-    // console.log("sessionstorage",customHosts[sessionStorage["env"]])
+  
     if (customHosts[sessionStorage["env"]]) {
       if (typeof getControlTool === "function") {
-          deferreds.push.apply(deferreds, getControlTool());
+        deferreds.push.apply(deferreds, getControlTool());
       }
 
       if (typeof getAsthmaActionPlan === "function") {
@@ -294,36 +292,36 @@ async function getChopRemainingData() {
   var deferreds = [];
   console.log("hello i am in get remaining data");
   // Filter locations to enable filtering during encounter chopProcessing
-  chopFilterLocations();
+  await chopFilterLocations();
 
-  // console.log("locationMap after filterLocation ", locationMap);
-  // console.log("encounters before chopPreFilterEncounters ", encounters);
-  // Perform a pre-filtering of the encounters to obtain base information about each for encMap
-  // and remove those that don't meet initial criteria. Will still need to filter based on dx and meds.
-  chopPreFilterEncounters(deferreds);
+  // // console.log("locationMap after filterLocation ", locationMap);
+  // // console.log("encounters before chopPreFilterEncounters ", encounters);
+  // // Perform a pre-filtering of the encounters to obtain base information about each for encMap
+  // // and remove those that don't meet initial criteria. Will still need to filter based on dx and meds.
+  const result = await chopPreFilterEncounters(deferreds);
 
-  // // Obtain admin history for meds classified as "inpatient"
-  // // This includes acute encounters (e.g. IP and ED) as well
-  // // as clinic administered medications.
+  // // // Obtain admin history for meds classified as "inpatient"
+  // // // This includes acute encounters (e.g. IP and ED) as well
+  // // // as clinic administered medications.
 
-  // // souvik comment
-  // // if (medAdminList.length > 0) {
-  // //     deferreds.push(getMedAdmin());
-  // // }
+  // souvik comment
+  if (medAdminList.length > 0) {
+    deferreds.push(await getMedAdmin());
+  }
 
-  // // Attach encounter ID to meds in medIdMap
-  chopAddMedContext();
+  // // // Attach encounter ID to meds in medIdMap
+  // chopAddMedContext();
 
-  // // Filter on care plans;
-  setCarePlans(carePlans);
-  chopFilterCarePlans(encMap);
-  carePlans = getCarePlans();
+  // // // Filter on care plans;
+  // setCarePlans(carePlans);
+  // chopFilterCarePlans(encMap);
+  // carePlans = getCarePlans();
   // console.log("i changed it in my appjs",chartConfig.chart.dates)
 
   if (customHosts[sessionStorage["env"]]) {
-      if (typeof getEncDat === "function" && csnList.length > 0) {
-          deferreds.push(getEncDat());
-      }
+    if (typeof getEncDat === "function" && csnList.length > 0) {
+      deferreds.push(getEncDat());
+    }
   }
 
   await Promise.allSettled(deferreds);
@@ -349,16 +347,16 @@ async function chopProcess() {
 
     // Waiting until remaining data is back to link
     // medications to encounters;
-    chopLinkMedAdmin();
+    // chopLinkMedAdmin();
 
-    // Build medication visualization object to pass to visualization library
-    chopBuildMedVisObj();
+    // // Build medication visualization object to pass to visualization library
+    // chopBuildMedVisObj();
 
     // Post-chopProcess encounters after medications have been linked
     chopPostFilterEncounters();
 
-    // Filter external encounters
-    filterExternalEncounters();
+    // // Filter external encounters
+    // filterExternalEncounters();
 
     // Build visualization
     return;
@@ -429,7 +427,7 @@ function chopFhirMedCallback(meds, state, xhr) {
   }
 }
 
-function chopEncounterCallback(enc, state, xhr) {
+async function chopEncounterCallback(enc, state, xhr) {
   try {
     // console.log("hererdsfsdkjhfkjs",xhr,state)
     if (xhr.status != 200) {
@@ -459,7 +457,7 @@ function chopEncounterCallback(enc, state, xhr) {
     console.log("here", error);
   }
 }
-
+// this will required promise settlement
 async function getChopEHRMedicationsRequest() {
   try {
     var deferreds = [];
@@ -468,8 +466,6 @@ async function getChopEHRMedicationsRequest() {
         id: "119944",
 
         row: "Biologic",
-
-   
       },
       {
         id: "113258",
@@ -480,43 +476,45 @@ async function getChopEHRMedicationsRequest() {
         row: "Systemic Steroid",
       },
     ];
-    grouper.forEach(async function (grouper) {
-      try {
-        deferreds.push(
-          await search(
-            "epic/2017/Clinical/Utility/GetMedications/GetMedications",
-            JSON.stringify({
-              PatientID: tokenResponse.patient,
-              PatientIDType: "FHIR",
-              GrouperID: grouper.id,
-              NumberDaysToIncludeDiscontinuedAndEndedOrders: 731,
-              ProfileView: "3",
-            }),
-            "POST",
-            {
-              "Content-Type": "application/json",
-            }
-          ).then(function (meds, state, xhr) {
-            try {
-              // TODO - Need to check for "error" responses from EHR when there aren't any results to return
-              if (!meds.MedicationOrders) {
-                meds.MedicationOrders = [];
+    await Promise.allSettled(
+      grouper.map(async function (grouper) {
+        try {
+          deferreds.push(
+            await search(
+              "epic/2017/Clinical/Utility/GetMedications/GetMedications",
+              JSON.stringify({
+                PatientID: tokenResponse.patient,
+                PatientIDType: "FHIR",
+                GrouperID: grouper.id,
+                NumberDaysToIncludeDiscontinuedAndEndedOrders: 731,
+                ProfileView: "3",
+              }),
+              "POST",
+              {
+                "Content-Type": "application/json",
               }
-              console.log("hiii I am in Grouper part");
-              // Pre-filter immediately to prep for encounter linking.
-              chopPreFilterMedications(meds.MedicationOrders, grouper.row);
-            } catch (error) {
-              // chart.failure = true;
-              console.log(error.stack, "error");
-            }
-          })
-        );
+            ).then(function (meds, state, xhr) {
+              try {
+                // TODO - Need to check for "error" responses from EHR when there aren't any results to return
+                if (!meds.MedicationOrders) {
+                  meds.MedicationOrders = [];
+                }
+                console.log("hiii I am in Grouper part");
+                // Pre-filter immediately to prep for encounter linking.
+                chopPreFilterMedications(meds.MedicationOrders, grouper.row);
+              } catch (error) {
+                // chart.failure = true;
+                console.log(error.stack, "error");
+              }
+            })
+          );
 
-        return deferreds;
-      } catch (error) {
-        console.log("error in groper", error);
-      }
-    });
+          return deferreds;
+        } catch (error) {
+          console.log("error in groper", error);
+        }
+      })
+    );
   } catch (error) {
     console.log("Grouper Error", error);
   }
@@ -857,7 +855,7 @@ function checkDx(dxList) {
   return asthmaDx && !croupDx;
 }
 
-function chopFilterLocations() {
+async function chopFilterLocations() {
   locations.forEach(function (v) {
     if (v.extension) {
       v.extension.forEach(function (ext, i) {
@@ -880,279 +878,326 @@ function chopFilterLocations() {
         if (locationMap[v.id] === undefined) {
           locationMap[v.id] = {};
         }
-        if (id.system && id.system.indexOf(hospitalConfig.filterLocationIdIndex) >= 0) {
+        if (
+          id.system &&
+          id.system.indexOf(hospitalConfig.filterLocationIdIndex) >= 0
+        ) {
           locationMap[v.id].internalId = id.value;
         }
       });
     }
   });
+  // console.log("filer location", encounters)
 }
 
-function chopPreFilterEncounters(deferred) {
-  encounters = encounters.filter(async function (resource) {
-    // Check status of encounter. Encounters with unknown status can be discarded.
-    // This is typically from billing encounters that aren't used for clinical care
-    if (resource.status == "unknown") {
-      return false;
-    }
-
-    // Convert period to start and end date
-    var start = (resource.start = dateFromString(resource.period.start));
-    var startStr = stringFromDate(start);
-    // console.log("string from date",startStr)
-    var end = (resource.end = dateFromString(resource.period.end));
-    var endStr = stringFromDate(end);
-
-    // Do not chopProcess future encounters
-    if (!start || start > today) {
-      return false;
-    }
-
-    // Due to splitting of requests, the EHR can return duplicate entries
-    // if the encounter spans multiple days. Check if we've already chopProcessed this encounter
-    if (encMap[resource.id]) {
-      return false;
-    }
-
-    // Create global encounter map for direct access when enhancing
-    // information from other APIs (e.g. medications)
-    // Use the FHIR ID as the key
-    encMap[resource.id] = {
-      _start: start,
-      _end: end,
-      detailMap: {
-        "Asthma Meds Ordered": {
-          value: [],
-        },
-        "Asthma Meds Administered": {
-          value: [],
-        },
-        Date: {
-          value: startStr,
-        },
-        "Full Visit Report": {
-          link: visitReport,
-        },
-        Type: {},
-      },
-    };
-
-    // Obtain contact serial number (EHR encounter ID)
-    resource.identifier.forEach(function (id, j) {
-      if (id.system.indexOf(hospitalConfig.preFilterEncounterCsnIndex) >= 0) {
-        // Add csn to encounter object
-        resource.csn = id.value;
-        encMap[resource.id]._csn = resource.csn;
-
-        // Add to CSN list to obtain DATs, which are used to
-        // link to encounter reports
-        csnList.push(resource.csn);
-        setcsnList(csnList)
-        // Add to CSN map to link care plan to encounter
-        csnToFhirIdMap[resource.csn] = resource.id;
-        setcsnToFhirIdMap(csnToFhirIdMap)
-      }
-    });
-
-    // Do not proceed if encounter is currently active
-    if (!end) {
-      return false;
-    }
-
-    // Extract encounter type and class (if they exist)
-    resource.type.forEach(function (type) {
-      type.coding.forEach(function (v) {
-        if (v.system.indexOf(hospitalConfig.preFilterEncounterTypeIndex) >= 0) {
-          resource.contactType = +v.code;
-          resource.contactName = v.display;
-        } else if (v.system.indexOf(hospitalConfig.preFilterEncounterClassIndex) >= 0) {
-          resource.adtClass = +v.code;
-          resource.adtClassName = v.display;
+async function chopPreFilterEncounters(deferred) {
+  try {
+    const filterEncounters = await Promise.allSettled(
+      encounters.map(async function (resource) {
+        // Check status of encounter. Encounters with unknown status can be discarded.
+        // This is typically from billing encounters that aren't used for clinical care
+        // console.log(resource)
+        if (resource.status == "unknown") {
+          return false;
         }
-      });
-    });
 
-    // encDateMap is used to link clinic administered meds to outpatient encounters
-    // so restricting to office visits
-    if (resource.contactType == 101) {
-      // Creating this complex of an encounter date map may be
-      // superflous now that we can link meds to encounter IDs.
-      // Can likely assume that all office visits start and stop
-      // on the same day.
-      if (!encDateMap[startStr]) {
-        encDateMap[startStr] = [];
-      }
+        // Convert period to start and end date
+        var start = (resource.start = dateFromString(resource.period.start));
+        // console.log(new Date())
+        console.log(start);
+        var startStr = stringFromDate(start);
+        var end = (resource.end = dateFromString(resource.period.end));
+        var endStr = stringFromDate(end);
 
-      // Adding full resource since I will need to sort on CSN
-      encDateMap[startStr].push(resource);
-      if (startStr != endStr) {
-        if (!encDateMap[endStr]) {
-          encDateMap[endStr] = [];
+        // Do not chopProcess future encounters
+        if (!start || start > today) {
+          return false;
         }
-        encDateMap[endStr].push(resource);
-      }
-    }
 
-    // Customer owned values
-    if ([1, 3, 4, 5].indexOf(resource.adtClass) >= 0) {
-      // Add encounter to the acute care list, which will be used to obtain
-      // medication administration records.
-      acuteCareList.push(resource);
-    }
+        // Due to splitting of requests, the EHR can return duplicate entries
+        // if the encounter spans multiple days. Check if we've already chopProcessed this encounter
+        if (encMap[resource.id]) {
+          return false;
+        }
 
-    // Check status of encounter. The values don't match up in EHR as you would expect.
-    if (
-      !(
-        resource.status in
-        { arrived: 1, finished: 1, "in-progress": 1, triaged: 1, planned: 1 }
-      )
-    ) {
-      return false;
-    }
-    // Set visualization group to the encounter ID and populate the hover details
-    // with basic information about the encounter. Hover details will be expanded
-    // on within each encounter type.
-    resource.group = resource.id;
-    resource.hoverDetails = [
-      {
-        key: "Date",
-        value: startStr,
-      },
-    ];
+        // Create global encounter map for direct access when enhancing
+        // information from other APIs (e.g. medications)
+        // Use the FHIR ID as the key
+        encMap[resource.id] = {
+          _start: start,
+          _end: end,
+          detailMap: {
+            "Asthma Meds Ordered": {
+              value: [],
+            },
+            "Asthma Meds Administered": {
+              value: [],
+            },
+            Date: {
+              value: startStr,
+            },
+            "Full Visit Report": {
+              link: visitReport,
+            },
+            Type: {},
+          },
+        };
 
-    // Check for "inpatient" admission
-    //   1 - Inpatient
-    //   5 - Observation
+        // Obtain contact serial number (EHR encounter ID)
+        resource.identifier.forEach(function (id, j) {
+          if (
+            id.system.indexOf(hospitalConfig.preFilterEncounterCsnIndex) >= 0
+          ) {
+            // Add csn to encounter object
+            resource.csn = id.value;
+            encMap[resource.id]._csn = resource.csn;
 
-    if ([1, 5].indexOf(resource.adtClass) >= 0) {
-      // Retrieve Condition resource from the reference provided as part
-      // of the "list" resource for hospital problems, if it exists
-      if (hospitalProblemMap[resource.id]) {
-        hospitalProblemMap[resource.id].forEach(async function (reference) {
-          deferred.push(
-            await search("FHIR/R4/" + reference).then(function (
-              condition,
-              state,
-              xhr
+            // Add to CSN list to obtain DATs, which are used to
+            // link to encounter reports
+            csnList.push(resource.csn);
+            setcsnList(csnList);
+            // Add to CSN map to link care plan to encounter
+            csnToFhirIdMap[resource.csn] = resource.id;
+            setcsnToFhirIdMap(csnToFhirIdMap);
+          }
+        });
+
+        // Do not proceed if encounter is currently active
+        if (!end) {
+          return false;
+        }
+
+        // Extract encounter type and class (if they exist)
+        resource.type.forEach(function (type) {
+          type.coding.forEach(function (v) {
+            if (
+              v.system.indexOf(hospitalConfig.preFilterEncounterTypeIndex) >= 0
             ) {
-              try {
-                if (encMap[resource.id]._validDx) {
-                  return false;
-                }
-                // TODO - Future state could consider capturing the data
-                // and chopProcessing later
-                if (condition.code) {
-                  condition.code.coding.forEach(function (dx) {
-                    if (asthmaDxRegex.test(dx.code)) {
-                      encMap[resource.id]._validDx = true;
+              resource.contactType = +v.code;
+              resource.contactName = v.display;
+            } else if (
+              v.system.indexOf(hospitalConfig.preFilterEncounterClassIndex) >= 0
+            ) {
+              resource.adtClass = +v.code;
+              resource.adtClassName = v.display;
+            }
+          });
+        });
+
+        // encDateMap is used to link clinic administered meds to outpatient encounters
+        // so restricting to office visits
+        if (resource.contactType == 101) {
+          // Creating this complex of an encounter date map may be
+          // superflous now that we can link meds to encounter IDs.
+          // Can likely assume that all office visits start and stop
+          // on the same day.
+          if (!encDateMap[startStr]) {
+            encDateMap[startStr] = [];
+          }
+
+          // Adding full resource since I will need to sort on CSN
+          encDateMap[startStr].push(resource);
+          if (startStr != endStr) {
+            if (!encDateMap[endStr]) {
+              encDateMap[endStr] = [];
+            }
+            encDateMap[endStr].push(resource);
+          }
+        }
+
+        // Customer owned values
+        if ([1, 3, 4, 5].indexOf(resource.adtClass) >= 0) {
+          // Add encounter to the acute care list, which will be used to obtain
+          // medication administration records.
+          acuteCareList.push(resource);
+        }
+        // console.log("acuratecarelist",resource)
+        // Check status of encounter. The values don't match up in EHR as you would expect.
+        if (
+          !(
+            resource.status in
+            {
+              arrived: 1,
+              finished: 1,
+              "in-progress": 1,
+              triaged: 1,
+              planned: 1,
+            }
+          )
+        ) {
+          return false;
+        }
+        // Set visualization group to the encounter ID and populate the hover details
+        // with basic information about the encounter. Hover details will be expanded
+        // on within each encounter type.
+        resource.group = resource.id;
+        resource.hoverDetails = [
+          {
+            key: "Date",
+            value: startStr,
+          },
+        ];
+
+        // Check for "inpatient" admission
+        //   1 - Inpatient
+        //   5 - Observation
+        if ([1, 5].indexOf(resource.adtClass) >= 0) {
+          // Retrieve Condition resource from the reference provided as part
+          // of the "list" resource for hospital problems, if it exists
+          try {
+            if (hospitalProblemMap[resource.id]) {
+              hospitalProblemMap[resource.id].forEach(async function (
+                reference
+              ) {
+                deferred.push(
+                  await search("FHIR/R4/" + reference).then(function (
+                    condition,
+                    state,
+                    xhr
+                  ) {
+                    try {
+                      if (encMap[resource.id]._validDx) {
+                        return false;
+                      }
+                      // TODO - Future state could consider capturing the data
+                      // and chopProcessing later
+                      if (condition.code) {
+                        condition.code.coding.forEach(function (dx) {
+                          if (asthmaDxRegex.test(dx.code)) {
+                            encMap[resource.id]._validDx = true;
+                          }
+                          if (dx.text && croupDxRegex.test(dx.text)) {
+                            encMap[resource.id]._croupDx = true;
+                          }
+                        });
+                      }
+                    } catch (error) {
+                      chart.failure = true;
+                      log(error.stack, "error");
                     }
-                    if (dx.text && croupDxRegex.test(dx.text)) {
-                      encMap[resource.id]._croupDx = true;
+                  })
+                );
+              });
+            }
+          } catch (error) {
+            console.log(error);
+          }
+
+          // // Check for an encounter diagnosis if it exists to also
+          // // determine if this is an encounter we should plot
+          try {
+            deferred.push(
+              await search("FHIR/R4/Condition", {
+                patient: tokenResponse.patient,
+                category: "encounter-diagnosis",
+                encounter: resource.id,
+              }).then(function (encDx, state, xhr) {
+                try {
+                  encDx.entry.forEach(function (entry) {
+                    if (encMap[resource.id]._validDx) {
+                      return;
+                    }
+                    if (entry.resource.code) {
+                      encMap[resource.id]._validDx = checkDx(
+                        entry.resource.code.coding
+                      );
                     }
                   });
+                } catch (error) {
+                  chart.failure = true;
+                  log(error.stack, "error");
                 }
-              } catch (error) {
-                chart.failure = true;
-                log(error.stack, "error");
-              }
-            })
-          );
-        });
-      }
-
-      // Check for an encounter diagnosis if it exists to also
-      // determine if this is an encounter we should plot
-      deferred.push(
-        await search("FHIR/R4/Condition", {
-          patient: tokenResponse.patient,
-          category: "encounter-diagnosis",
-          encounter: resource.id,
-        }).then(function (encDx, state, xhr) {
-          try {
-            encDx.entry.forEach(function (entry) {
-              if (encMap[resource.id]._validDx) {
-                return;
-              }
-              if (entry.resource.code) {
-                encMap[resource.id]._validDx = checkDx(
-                  entry.resource.code.coding
+              })
+            );
+          } catch (error) {
+            console.log(error);
+          }
+          // Add details about the encounter to the encounter map
+          encMap[resource.id].row = resource.row = "Inpatient";
+          encMap[resource.id].detailMap.Type.value = resource.adtClassName;
+          // console.log("enejknfje", encMap);
+          // Add location to hover details
+          resource.hoverDetails.push({
+            key: "Location",
+            value: resource.adtClassName,
+          });
+          // Check for ICU stays
+          if (resource.location) {
+            // Get location name
+            resource.location.forEach(function (loc, i) {
+              // Verify the location has a "period" key
+              if (loc.period && loc.location.reference) {
+                var locationId = loc.location.reference.replace(
+                  "Location/",
+                  ""
                 );
+                if (
+                  chartConfig.icuList &&
+                  locationMap[locationId] &&
+                  locationMap[locationId].internalId &&
+                  chartConfig.icuList.indexOf(
+                    locationMap[locationId].internalId
+                  ) !== -1
+                ) {
+                  // Add metadata and change the color and shape based
+                  // on the value defined in the legend
+                  encMap[resource.id].detailMap["ICU Visit"] = {
+                    highlight: true,
+                  };
+                  resource._icu = true;
+                  resource.shape =
+                    chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
+                  resource.color =
+                    chartConfig.rows[rowMap[resource.row]].legend.alt.color;
+                }
               }
             });
-          } catch (error) {
-            chart.failure = true;
-            log(error.stack, "error");
           }
-        })
-      );
+          // Check for "emergency" visit
+        } else if (resource.adtClass == 3) {
+          // Check if this is an encounter we should plot
+          deferred = await getEncDiagnosis(resource, deferred);
 
-      // Add details about the encounter to the encounter map
-      encMap[resource.id].row = resource.row = "Inpatient";
-      encMap[resource.id].detailMap.Type.value = resource.adtClassName;
+          // console.log("this should be print before send of result")
 
-      // Add location to hover details
-      resource.hoverDetails.push({
-        key: "Location",
-        value: resource.adtClassName,
-      });
-      // Check for ICU stays
-      if (resource.location) {
-        // Get location name
-        resource.location.forEach(function (loc, i) {
-          // Verify the location has a "period" key
-          if (loc.period && loc.location.reference) {
-            var locationId = loc.location.reference.replace("Location/", "");
-            if (
-              chartConfig.icuList &&
-              locationMap[locationId] &&
-              locationMap[locationId].internalId &&
-              chartConfig.icuList.indexOf(
-                locationMap[locationId].internalId
-              ) !== -1
-            ) {
-              // Add metadata and change the color and shape based
-              // on the value defined in the legend
-              encMap[resource.id].detailMap["ICU Visit"] = {
-                highlight: true,
-              };
-              resource._icu = true;
-              resource.shape =
-                chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
-              resource.color =
-                chartConfig.rows[rowMap[resource.row]].legend.alt.color;
-            }
-          }
-        });
-      }
-      // Check for "emergency" visit
-    } else if (resource.adtClass == 3) {
-      // Check if this is an encounter we should plot
-      await getEncDiagnosis(resource, deferred);
+          // Add details about the encounter to the encounter map
+          encMap[resource.id].row = resource.row = "Emergency Only";
+          encMap[resource.id].detailMap.Type.value = resource.adtClassName;
 
-      // Add details about the encounter to the encounter map
-      encMap[resource.id].row = resource.row = "Emergency Only";
-      encMap[resource.id].detailMap.Type.value = resource.adtClassName;
+          // Add location to hover details
+          resource.hoverDetails.push({
+            key: "Location",
+            value: resource.adtClassName,
+          });
+          // chopProcess all other visits
+        } else {
+          // Souvik debug
+          // console.log("resource.adtClass  " + resource.adtClass);
+          // Set visit type
+          encMap[resource.id].detailMap.Type.value =
+            resource.contactName || resource.adtClassName;
 
-      // Add location to hover details
-      resource.hoverDetails.push({
-        key: "Location",
-        value: resource.adtClassName,
-      });
-      // chopProcess all other visits
-    } else {
-      // Souvik debug
-      // console.log("resource.adtClass  " + resource.adtClass);
-
-      // Set visit type
-      encMap[resource.id].detailMap.Type.value =
-        resource.contactName || resource.adtClassName;
-
-      if (resource.location) {
-        // Get location name
-        resource.location.forEach(function (loc, i) {
-          // Verify the location has a "period" key
-          if (resource.contactType == 3) {
-            if (loc.period) {
+          if (resource.location) {
+            // Get location name
+            resource.location.forEach(function (loc, i) {
+              // Verify the location has a "period" key
+              if (resource.contactType == 3) {
+                if (loc.period) {
+                  resource.fullLocationName = loc.location.display;
+                  // For encounters with multiple locations the application will display the last one
+                  encMap[resource.id].detailMap.Location = {
+                    value:
+                      loc.location.display.length > 25
+                        ? loc.location.display.substr(0, 25) + "..."
+                        : loc.location.display,
+                  };
+                  resource.deptId = loc.location.reference.replace(
+                    "Location/",
+                    ""
+                  );
+                }
+                return;
+              }
               resource.fullLocationName = loc.location.display;
               // For encounters with multiple locations the application will display the last one
               encMap[resource.id].detailMap.Location = {
@@ -1161,73 +1206,80 @@ function chopPreFilterEncounters(deferred) {
                     ? loc.location.display.substr(0, 25) + "..."
                     : loc.location.display,
               };
+              // souvik debug
+              // console.log("In prefilter", encMap[resource.id]);
               resource.deptId = loc.location.reference.replace("Location/", "");
-            }
-            return;
+            });
+          } else {
+            encMap[resource.id].detailMap.Location = {
+              value: "Unknown",
+            };
           }
-          resource.fullLocationName = loc.location.display;
-          // For encounters with multiple locations the application will display the last one
-          encMap[resource.id].detailMap.Location = {
-            value:
-              loc.location.display.length > 25
-                ? loc.location.display.substr(0, 25) + "..."
-                : loc.location.display,
-          };
-          // souvik debug
-          // console.log("In prefilter", encMap[resource.id]);
-          resource.deptId = loc.location.reference.replace("Location/", "");
-        });
-      } else {
-        encMap[resource.id].detailMap.Location = {
-          value: "Unknown",
-        };
-      }
 
-      // Check for valid location, which also sets the row
-      // TODO - These two functions should be separated
-      if (!isValidLocation(resource)) {
-        return false;
-      }
+          // Check for valid location, which also sets the row
+          // TODO - These two functions should be separated
+          if (!isValidLocation(resource)[0]) {
+            // console.log(resource)
+            return false;
+          } else {
+            resource = isValidLocation(resource)[1];
+            console.log(resource);
+          }
 
-      // Check for a valid contact type. Office visit or urgent care
-      if (resource.contactType == 3) {
-        // Add encounter to the acute care list, which will be used to obtain
-        // medication administration records.
-        acuteCareList.push(resource);
-        encMap[resource.id].detailMap.Type.value = "Urgent Care";
-        resource._uc = true;
-        resource.shape =
-          chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
-      } else if (resource.contactType != 101) {
-        return false;
-      }
+          // console.log("numberof resource",resource)
+          // Check for a valid contact type. Office visit or urgent care
+          if (resource.contactType == 3) {
+            // Add encounter to the acute care list, which will be used to obtain
+            // medication administration records.
+            acuteCareList.push(resource);
+            encMap[resource.id].detailMap.Type.value = "Urgent Care";
+            resource._uc = true;
+            resource.shape =
+              chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
+            // console.Console.log("resource", resource)
+          } else if (resource.contactType != 101) {
+            console.log(resource, "sjdhfdjkshfkjdshfkjdsh");
+            return false;
+          }
 
-      // Add location to hover details
-      resource.hoverDetails.push({
-        key: "Location",
-        value: resource.fullLocationName,
+          // Add location to hover details
+          resource.hoverDetails.push({
+            key: "Location",
+            value: resource.fullLocationName,
+          });
+
+          // Check for valid encounter diagnosis
+          await getEncDiagnosis(resource, deferred);
+        }
+
+        // console.log("hellldopfdsfjdhfkjd")
+
+        // If the code gets here, this is an encounter we are interested in
+        return true;
+      })
+    );
+    // Sorting encounter date map entries by CSN. May not be necessary anymore
+    // but possibly helpful when linking admins to encounters.
+    _.each(encDateMap, function (v) {
+      v.sort(function (a, b) {
+        if (a.csn < b.csn) {
+          return -1;
+        }
+        if (a.csn > b.csn) {
+          return 1;
+        }
+        return 0;
       });
-
-      // Check for valid encounter diagnosis
-      await getEncDiagnosis(resource, deferred);
-    }
-
-    // If the code gets here, this is an encounter we are interested in
-    return true;
-  });
-  // Sorting encounter date map entries by CSN. May not be necessary anymore
-  // but possibly helpful when linking admins to encounters.
-  _.each(encDateMap, function (v) {
-    v.sort(function (a, b) {
-      if (a.csn < b.csn) {
-        return -1;
-      }
-      if (a.csn > b.csn) {
-        return 1;
-      }
-      return 0;
     });
-  });
+
+    encounters = encounters.filter(
+      (_, i) => filterEncounters[i].value === true
+    );
+
+    return deferred;
+  } catch (error) {
+    console.log("prefilterecncounter Error ", error);
+  }
 }
 
 function isValidLocation(resource) {
@@ -1242,13 +1294,13 @@ function isValidLocation(resource) {
     chartConfig.ignoredDepts &&
     chartConfig.ignoredDepts[internalId]
   ) {
-    return false;
+    return [false, resource];
   }
 
   // Check for organization specific filtering
   if (chartConfig.orgDeptMap && chartConfig.orgDeptMap[internalId]) {
     encMap[resource.id].row = resource.row = chartConfig.orgDeptMap[internalId];
-    return true;
+    return [true, resource];
   }
   // souvik debug
   // console.log("reource: ", resource);
@@ -1256,27 +1308,30 @@ function isValidLocation(resource) {
   if (locationMap[resource.deptId]) {
     switch (locationMap[resource.deptId].code) {
       case "3":
+        console.log("allegry");
         encMap[resource.id].row = resource.row = "Allergy";
-        return true;
+        return [true, resource];
       case "82":
+        // console.log("hello")
         encMap[resource.id].row = resource.row = "Primary Care";
-        return true;
+        return [true, resource];
       case "105":
         // Urgent care visit, which are plotted under Emergency Only
         encMap[resource.id].row = resource.row = "Emergency Only";
-        return true;
+        return [true, resource];
       case "110":
         encMap[resource.id].row = resource.row = "Pulmonary";
-        return true;
+        return [true, resource];
     }
   }
-  return false;
+  return [false, resource];
 }
 
 function chopPostFilterEncounters() {
   // Loop over encounters after additional context has been added
   // to determine which encounters to include
   encounters = encounters.filter(function (resource) {
+    console.log("post filter ", resource);
     if (!encMap[resource.id]) {
       return false;
     }
@@ -1309,75 +1364,85 @@ function chopPostFilterEncounters() {
 }
 
 async function getEncDiagnosis(resource, deferred) {
-  deferred.push(
-    await search("FHIR/R4/Condition", {
-      patient: tokenResponse.patient,
-      category: "encounter-diagnosis",
-      encounter: resource.id,
-    }).then(function (encDx, state, xhr) {
-      try {
-        encDx.entry.forEach(function (entry) {
-          if (encMap[resource.id]._validDx) {
-            return;
-          }
-          if (entry.resource.code) {
-            encMap[resource.id]._validDx = checkDx(entry.resource.code.coding);
-          }
-        });
-      } catch (error) {
-        // chart.failure = true;
-        console.log(error, "error");
-      }
-    })
-  );
+  try {
+    deferred.push(
+      await search("FHIR/R4/Condition", {
+        patient: tokenResponse.patient,
+        category: "encounter-diagnosis",
+        encounter: resource.id,
+      }).then(function (encDx, state, xhr) {
+        try {
+          encDx.entry.forEach(function (entry) {
+            if (encMap[resource.id]._validDx) {
+              return;
+            }
+            if (entry.resource.code) {
+              encMap[resource.id]._validDx = checkDx(
+                entry.resource.code.coding
+              );
+            }
+          });
+
+          return deferred;
+        } catch (error) {
+          // chart.failure = true;
+          console.log(error, "error");
+        }
+      })
+    );
+  } catch (error) {
+    console.log("getEncDiagnosisError ", error);
+  }
 }
-
-
 
 function visitReport(elem, data) {
-    try {
-      var csnToDatMap = getcsnToDatMap()
-        console.log(data.row + " encounter report click event.", "info");
-        executeAction({
-            action: "Epic.Clinical.Informatics.Web.LaunchActivity",
-            args: {
-                "ActivityKey":"REPORTVIEWER",
-                "Parameters":{
-                    "REPORTPROVIDER":"MR_REPORTS",
-                    "REPORTCONTEXT": "11^R99#,EPT," + tokenResponse.eptIdIn + "," + csnToDatMap[data._csn] + ",1"
-                }
-            }
-        });
-    } catch (error) {
-       log(error.stack, "error");
-    }
+  try {
+    var csnToDatMap = getcsnToDatMap();
+    console.log(data.row + " encounter report click event.", "info");
+    executeAction({
+      action: "Epic.Clinical.Informatics.Web.LaunchActivity",
+      args: {
+        ActivityKey: "REPORTVIEWER",
+        Parameters: {
+          REPORTPROVIDER: "MR_REPORTS",
+          REPORTCONTEXT:
+            "11^R99#,EPT," +
+            tokenResponse.eptIdIn +
+            "," +
+            csnToDatMap[data._csn] +
+            ",1",
+        },
+      },
+    });
+  } catch (error) {
+    log(error.stack, "error");
+  }
 }
-
 
 async function readFileFromURL(url) {
   try {
     // console.log("hiiiiii")
-    const response = await axios.get(url, { responseType: 'text' });
-    console.log(response.data)
+    const response = await axios.get(url, { responseType: "text" });
+    console.log(response.data);
     return response;
   } catch (error) {
-    throw new Error('Error reading file from URL: ' + error.message);
+    throw new Error("Error reading file from URL: " + error.message);
   }
 }
 
 // Function to read content from local file
 async function readFileFromLocalPath(filePath) {
   try {
-    return await fs.promises.readFile(filePath, 'utf8');
+    return await fs.promises.readFile(filePath, "utf8");
   } catch (error) {
-    throw new Error('Error reading local file: ' + error.message);
+    throw new Error("Error reading local file: " + error.message);
   }
 }
 
 // Function to read file content based on input
 async function readFile(input) {
   // console.log("hellooo")
-  if (input.startsWith('http://') || input.startsWith('https://')) {
+  if (input.startsWith("http://") || input.startsWith("https://")) {
     // Input is a URL
     return await readFileFromURL(input);
   } else {
@@ -1386,6 +1451,579 @@ async function readFile(input) {
   }
 }
 
+async function getMedAdmin() {
+  try {
+    return await search(
+      "epic/2014/Clinical/Patient/GETMEDICATIONADMINISTRATIONHISTORY/MedicationAdministration",
+      JSON.stringify({
+        PatientID: tokenResponse.patient,
+        PatientIDType: "FHIR",
+        ContactID: tokenResponse.csn,
+        ContactIDType: "CSN",
+        OrderIDs: medAdminList,
+      }),
+      "POST",
+      {
+        "Content-Type": "application/json",
+      }
+    ).then(function (adminHistory, state, xhr) {
+      try {
+        if (!adminHistory.Orders) {
+          return;
+        }
+        adminHistory.Orders.forEach(function (d) {
+          // This should never happen, but adding check
+          // just in case.
+          if (!medIdMap[d.OrderID.ID]) {
+            return;
+          }
+          d.MedicationAdministrations.forEach(function (admin) {
+            var adminDate = dateFromString(admin.AdministrationInstant);
+            if (
+              admin.AdministrationInstant &&
+              adminDate > chartConfig.chart.dates.contextStart
+            ) {
+              if (!medAdminMap[d.OrderID.ID]) {
+                medAdminMap[d.OrderID.ID] = [];
+              }
+              medAdminMap[d.OrderID.ID].push({
+                date: adminDate,
+                dateStr: stringFromDate(adminDate),
+              });
+            }
+          });
+        });
+      } catch (error) {
+        chart.failure = true;
+        log(error.stack, "error");
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   buildApp,
+};
+
+var visitData = {
+  resourceType: "Bundle",
+  type: "searchset",
+  total: 47,
+  link: [
+    {
+      relation: "self",
+      url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter?patient=ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3&date=gt2018-06-15",
+    },
+  ],
+  entry: [
+    {
+      link: [
+        {
+          relation: "self",
+          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+        },
+      ],
+      fullUrl:
+        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+      resource: {
+        resourceType: "Location",
+        id: "44319901",
+        extension: [
+          {
+            valueCodeableConcept: {
+              coding: [
+                {
+                  system: ".7.10.688867.4150",
+                  code: "82",
+                },
+              ],
+            },
+          },
+        ],
+        identifier: [
+          {
+            system: ".7.2.686980",
+            value: "sjdfkjdshf",
+          },
+        ],
+        status: "arrived",
+        class: {
+          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+          code: "5",
+          display: "Appointment",
+        },
+
+        subject: {
+          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+          display: "Test, Healthchart",
+        },
+        participant: [
+          {
+            type: [
+              {
+                coding: [
+                  {
+                    system: "http://hl7.org/fhir/v3/ParticipationType",
+                    code: "REF",
+                    display: "referrer",
+                  },
+                ],
+                text: "referrer",
+              },
+            ],
+          },
+          {
+            period: {
+              start: "2022-05-25T14:00:00Z",
+              end: "2022-05-25T14:30:00Z",
+            },
+          },
+        ],
+        period: {
+          start: "2022-05-25T14:00:00Z",
+          end: "2022-05-25T14:30:00Z",
+        },
+        location: [
+          {
+            location: {
+              reference: "Location/44319901",
+              display: "Buerger Center Allergy",
+            },
+          },
+        ],
+      },
+      search: {
+        mode: "match",
+      },
+    },
+    {
+      link: [
+        {
+          relation: "self",
+          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+        },
+      ],
+      fullUrl:
+        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+      resource: {
+        resourceType: "Encounter",
+        id: "etPlPSTi-Ck8pFW0vJgBM6A3",
+        identifier: [
+          {
+            use: "usual",
+            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+            value: "8700006468",
+          },
+          {
+            use: "usual",
+            type: {
+              text: "billing-number",
+            },
+            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
+            value: "8700006468",
+          },
+        ],
+        status: "arrived",
+        class: {
+          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+          code: "5",
+          display: "Appointment",
+        },
+        type: [
+          {
+            coding: [
+              {
+                system: "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
+                code: "50",
+                display: "Appointment",
+              },
+            ],
+            text: "Appointment",
+          },
+          {
+            coding: [
+              {
+                system: "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
+                code: "3044",
+                display: "BIOLOGIC",
+              },
+            ],
+            text: "BIOLOGIC",
+          },
+        ],
+        subject: {
+          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+          display: "Test, Healthchart",
+        },
+        participant: [
+          {
+            type: [
+              {
+                coding: [
+                  {
+                    system: "http://hl7.org/fhir/v3/ParticipationType",
+                    code: "REF",
+                    display: "referrer",
+                  },
+                ],
+                text: "referrer",
+              },
+            ],
+          },
+          {
+            period: {
+              start: "2022-05-25T14:00:00Z",
+              end: "2022-05-25T14:30:00Z",
+            },
+          },
+        ],
+        period: {
+          start: "2022-05-25T14:00:00Z",
+          end: "2022-05-25T14:30:00Z",
+        },
+        location: [
+          {
+            location: {
+              reference: "Location/44319901",
+              display: "Buerger Center Allergy",
+            },
+          },
+        ],
+      },
+      search: {
+        mode: "match",
+      },
+    },
+    {
+      link: [
+        {
+          relation: "self",
+          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+        },
+      ],
+      fullUrl:
+        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+      resource: {
+        resourceType: "Location",
+        id: "44319902",
+        extension: [
+          {
+            valueCodeableConcept: {
+              coding: [
+                {
+                  system: ".7.10.688867.4150",
+                  code: "3",
+                },
+              ],
+            },
+          },
+        ],
+        identifier: [
+          {
+            system: ".7.2.686980",
+            value: "sjdfkjdshf",
+          },
+        ],
+        status: "arrived",
+        class: {
+          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+          code: "5",
+          display: "Appointment",
+        },
+
+        subject: {
+          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+          display: "Test, Healthchart",
+        },
+        participant: [
+          {
+            type: [
+              {
+                coding: [
+                  {
+                    system: "http://hl7.org/fhir/v3/ParticipationType",
+                    code: "REF",
+                    display: "referrer",
+                  },
+                ],
+                text: "referrer",
+              },
+            ],
+          },
+          {
+            period: {
+              start: "2022-05-25T14:00:00Z",
+              end: "2022-05-25T14:30:00Z",
+            },
+          },
+        ],
+        period: {
+          start: "2022-05-25T14:00:00Z",
+          end: "2022-05-25T14:30:00Z",
+        },
+        location: [
+          {
+            location: {
+              reference: "Location/44319901",
+              display: "Buerger Center Allergy",
+            },
+          },
+        ],
+      },
+      search: {
+        mode: "match",
+      },
+    },
+    {
+      link: [
+        {
+          relation: "self",
+          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+        },
+      ],
+      fullUrl:
+        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
+      resource: {
+        resourceType: "Encounter",
+        id: "etPlPSTi-Ck8pFW0vJgBA3",
+        identifier: [
+          {
+            use: "usual",
+            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+            value: "8700006468",
+          },
+          {
+            use: "usual",
+            type: {
+              text: "billing-number",
+            },
+            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
+            value: "8700006468",
+          },
+        ],
+        status: "arrived",
+        class: {
+          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
+          code: "5",
+          display: "Appointment",
+        },
+        type: [
+          {
+            coding: [
+              {
+                system: "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
+                code: "50",
+                display: "Appointment",
+              },
+            ],
+            text: "Appointment",
+          },
+          {
+            coding: [
+              {
+                system: "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
+                code: "3044",
+                display: "BIOLOGIC",
+              },
+            ],
+            text: "BIOLOGIC",
+          },
+        ],
+        subject: {
+          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
+          display: "Test, Healthchart",
+        },
+        participant: [
+          {
+            type: [
+              {
+                coding: [
+                  {
+                    system: "http://hl7.org/fhir/v3/ParticipationType",
+                    code: "REF",
+                    display: "referrer",
+                  },
+                ],
+                text: "referrer",
+              },
+            ],
+          },
+          {
+            period: {
+              start: "2023-05-25T14:00:00Z",
+              end: "2023-05-25T14:30:00Z",
+            },
+          },
+        ],
+        period: {
+          start: "2023-05-25T14:00:00Z",
+          end: "2023-05-25T14:30:00Z",
+        },
+        location: [
+          {
+            location: {
+              reference: "Location/44319902",
+              display: "Buerger Center Allergy",
+            },
+          },
+        ],
+      },
+      search: {
+        mode: "match",
+      },
+    },
+    {
+      resource: {
+        resourceType: "Encounter",
+        id: 1,
+        status: "unknown",
+      },
+    },
+    {
+      resource: {
+        resourceType: "Encounter",
+        id: 2,
+        status: "arrived",
+
+        period: {
+          start: "2023-08-10T10:00:00",
+          end: "2023-08-15T18:30:00",
+        },
+        identifier: [
+          {
+            system: ".7.3.698084.8",
+            value: "value",
+          },
+        ],
+        type: [
+          {
+            coding: [
+              {
+                system: ".7.10.698084.30",
+                code: "3",
+                display: "",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      resource: {
+        resourceType: "Encounter",
+        id: 3,
+        status: "in-progress",
+
+        period: {
+          start: "2023-08-10T10:00:00",
+          end: "2023-08-15T18:30:00",
+        },
+        identifier: [
+          {
+            system: ".7.3.698084.8",
+            value: "value",
+          },
+        ],
+        type: [
+          {
+            coding: [
+              {
+                system: ".7.10.698084.10110",
+                code: "1",
+                display: "",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      resource: {
+        resourceType: "Encounter",
+        id: 4,
+        status: "in-progress",
+
+        period: {
+          start: "2023-01-10T10:00:00",
+          end: "2023-01-15T18:30:00",
+        },
+        identifier: [
+          {
+            system: ".7.3.698084.8",
+            value: "value",
+          },
+        ],
+        type: [
+          {
+            coding: [
+              {
+                system: ".7.10.698084.10110",
+                code: "5",
+                display: "Florida",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      resource: {
+        resourceType: "Encounter",
+        id: 5,
+        status: "in-progress",
+
+        period: {
+          start: "2022-08-10T10:00:00",
+          end: "2022-08-15T18:30:00",
+        },
+        identifier: [
+          {
+            system: ".7.3.698084.8",
+            value: "value",
+          },
+        ],
+        type: [
+          {
+            coding: [
+              {
+                system: ".7.10.698084.10110",
+                code: "3",
+                display: "Florida",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      resource: {
+        resourceType: "Location",
+        id: 2,
+        name: "name",
+        extension: [
+          {
+            valueCodeableConcept: {
+              coding: [
+                {
+                  system: "",
+                  code: 34,
+                  display: "something display",
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      resource: {
+        resourceType: "Location",
+        id: 3,
+        name: "name",
+        identifier: [{ value: "random value" }],
+      },
+    },
+  ],
 };

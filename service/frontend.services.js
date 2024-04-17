@@ -65,11 +65,25 @@ const loginService = async(data) => {
         return { error }
     }
 }
+
+
+
+const addConfigService = async (data) =>{
+    try{
+       const result = await frontendRepository.addConfig(data)
+       return result
+    }catch(error){
+        return {error}
+    }
+}
+
+
 module.exports = {
     getHospitalDataService,
     addHospitalService,
     getStatsService,
     addLisenceService,
     signupService,
-    loginService
+    loginService,
+    addConfigService
 }

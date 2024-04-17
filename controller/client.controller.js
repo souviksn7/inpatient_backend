@@ -59,17 +59,17 @@ const checkClientIdController = async (req,res) =>{
      }
     //  console.log("decoded",decodedPayload)
         const response = await clientService.checkClientIdService(decodedPayload.client_id)
-        console.log(response)
+        // console.log(response)
         req.clientId = response[0].id
         req.state = JSON.parse(req.headers.state)
         req.patientId = tokenResponse.patient
         req.hospital_name = response[0].hospital_name
 
-        const path = await clientService.getConfigFilePathService(req.clientId)
-        // console.log(path)
-        req.configPath = path.rows[0].filepath
+        const config = await clientService.getConfigFilePathService(req.clientId)
+        
+        req.config = config.rows[0]
         // console.log("heloo",response)
-        console.log(req.configPath)
+        console.log("hehriuriuyeruyweiuryiuw",req.config)
         return response[0]       // res.status(200).send(response);
     } catch(error){
         console.log("erro",error)

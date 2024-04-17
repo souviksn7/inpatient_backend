@@ -76,6 +76,15 @@ const loginController = async (req, res) => {
   }
 };
 
+const addConfigController = async (req,res) =>{
+  try{
+    const response = await frontendService.addConfigService(req.body)
+    res.status(200).send(response)
+  }catch(error){
+    res.status(401).send(error)
+  }
+}
+
 module.exports = {
   getHospitalDataController,
   addHospitalController,
@@ -83,4 +92,5 @@ module.exports = {
   addLisenceController,
   loginController,
   signupController,
+  addConfigController
 };

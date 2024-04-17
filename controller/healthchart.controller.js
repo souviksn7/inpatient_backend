@@ -11,7 +11,7 @@ const gethealthchartDataController = async (req,res) =>{
      console.log("healthchart:",JSON.parse(req.headers.state))
   
 
-    const response = await chopBusinessLogic.buildApp(req.hospital_name,JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage),req.configPath)
+    const response = await chopBusinessLogic.buildApp(req.hospital_name,JSON.parse(req.headers.tokenresponse),JSON.parse(req.headers.state),JSON.parse(req.headers.sessionstorage),req.config)
     // const projectDirectory = process.cwd();
     // var response = []
    
