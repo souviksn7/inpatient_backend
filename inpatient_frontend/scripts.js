@@ -201,7 +201,7 @@ document
             localStorage.setItem("isLoggedIn", true);
 
             setTimeout(() => {
-              window.location.href = "./pages/hospital_registration.html";
+              window.location.href = "./pages/home_page.html";
             }, 2000);
             console.log(data.success);
             // Redirect to the hospital registration page if signup is successful
