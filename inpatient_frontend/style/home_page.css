@@ -1,0 +1,79 @@
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.leftCard {
+  width: 700px; 
+  height: 700px;
+}
+.rightCard {
+  width: 700px; 
+  height: 1400px;
+}
+
+.container-homepage {
+  display: flex;
+  gap: 20px;
+}
+
+#hospital-logo{
+    width: 100px;
+    height: 100px;
+    margin-top: -20px;
+    margin-left: -20px;
+}
+
+#statistics-logo{
+    width: 80px;
+    height: 80px;
+}
+
+#hospital-logo-1{
+    width: 80px;
+    height: 80px;
+}
+
+#add-config-logo-1{
+    width: 90px;
+    height: 90px;
+}
+
+.p1{
+    font-family: "Lucida Console", "Courier New", monospace;
+}
+.p2{
+    font-family: "Lucida Console", "Courier New", monospace;
+    margin-top: -10px;
+}
+
+#hopital-stat-button{
+    margin-top: 50px;
+    border-radius: 15px;
+    height: 100px;
+    width: 300px;
+    /* background-color: rgb(142, 190, 232); */
+}
+
+#hospital-registration-button{
+    margin-left: 230px;
+    border-radius: 15px;
+    height: 100px;
+    width: 300px;
+    /* background-color: rgb(230, 224, 141); */
+}
+
+#license-registraion-button{
+    border-radius: 15px;
+    height: 100px;
+    width: 300px;
+    /* background-color: rgb(142, 190, 232); */
+}
+
+#add-config-button{
+    margin-left: 230px;
+    border-radius: 15px;
+    height: 100px;
+    width: 300px;
+}

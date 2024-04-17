@@ -1,177 +1,200 @@
 /* Custom styles */
 .container {
-    margin-top: 50px;
+  margin-top: 7%;
+  margin-bottom: 13%;
 }
 
 /* Table styles */
 .table {
-    width: 50%;
-    border-collapse: collapse;
+  width: 50%;
+  border-collapse: collapse;
 }
 
 .table th,
 .table td {
-    padding: 8px;
-    border: 1px solid #ddd;
+  padding: 8px;
+  border: 1px solid #ddd;
 }
 
 .table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
+  background-color: #f2f2f2;
+  font-weight: bold;
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f9f9f9;
+  background-color: #f9f9f9;
 }
 
 .navColor {
-    background-color: #e7ecf0;
+  background-color: #e7ecf0;
 }
 
-.home-body{
-    background-image: url('/inpatient_frontend/images/home-page-background.jpg');
+.nav-link {
+  text-decoration: none;
+  padding: 20px 20px;
+  display: inline-block;
+  position: relative;
+  opacity: 0.75;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.home-body {
+  background-image: url("/inpatient_frontend/images/home-page-background.jpg");
 }
 
 .custom-form {
-    margin-top: 20px;
-    margin-left: 25%;
-    margin-right: 25%;
-    width: 50%;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #e7ecf0;
+  margin-top: 20px;
+  margin-left: 25%;
+  margin-right: 25%;
+  width: 50%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #e7ecf0;
 }
 
 .custom-form .form-group {
-    margin-bottom: 20px; /* Add space between form fields */
+  margin-bottom: 20px; /* Add space between form fields */
 }
 
 .form-header {
-    margin-bottom: 20px;
-    margin-top: 40px;
-    text-align: center;
+  margin-bottom: 20px;
+  margin-top: 40px;
+  text-align: center;
 }
 
-.submit-btn-color{
-    background-color: #7d2ae8;
+.submit-btn-color {
+  background-color: #7d2ae8;
 }
-
 
 /* Dropdown content */
 .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    width: 100%;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-    z-index: 1;
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  width: 100%;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 
 /* Links inside the dropdown */
 .dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
 }
 
 /* Change color of dropdown links on hover */
 .dropdown-content a:hover {
-    background-color: #ddd;
+  background-color: #ddd;
 }
 
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
-    display: block;
+  display: block;
 }
-
 
 /* check_statistics styles */
 
-
 /* Wrapper for date picker */
 
-.date-picker{
-    padding-bottom: 25px;
+.date-picker {
+  padding-bottom: 25px;
 }
-
 
 /* statistics table styles */
 
-
-#statisticsTable{
-    /* display: none; */
+#statisticsTable {
+  /* display: none; */
 }
 
 /* Custom table styles */
 .table-container {
-    /* width: 100%; Adjust the width as needed */
-    
+  /* width: 100%; Adjust the width as needed */
 }
 
 .table {
-    border-radius: 10px;
-    overflow: hidden;
-    background-color: #7d2ae8; 
-    border-width: 2px;
-    border-color: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #7d2ae8;
+  border-width: 2px;
+  border-color: #ddd;
 }
 
 /* Table header styles */
 .table thead th {
-    background-color: #e0dde4; 
-    color: #7d2ae8; 
-    border-color: #454d55; 
+  background-color: #e0dde4;
+  color: #7d2ae8;
+  border-color: #454d55;
 }
 
 /* Table body styles */
 .table tbody tr {
-    background-color: #fff; /* White background color for table rows */
+  background-color: #fff; /* White background color for table rows */
 }
 
 /* Alternate row color */
 .table tbody tr:nth-of-type(odd) {
-    background-color: #f2f2f2; /* Light gray background color for alternate rows */
+  background-color: #f2f2f2; /* Light gray background color for alternate rows */
 }
 
-.table td, .table th {
-    padding: 10px 15px; 
-    line-height: 1.5; 
+.table td,
+.table th {
+  padding: 10px 15px;
+  line-height: 1.5;
 }
 
-.table th{
-    font-size: 14px;
+.table th {
+  font-size: 14px;
 }
 
 .table td {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 .table tbody tr:hover {
-    background-color: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 .table-responsive {
-    overflow-x: auto;
+  overflow-x: auto;
 }
 
-.navbar-nav{
-    width: 96%;
-}
-/* .navbar.navColor {
-    background-color: #e9ecef; 
-}
-.nav-item.active {
-    background-color: #f0f0f0; 
-} */
 
-/* My account button  */
+/* Navbar styles starts */
 
-.profileImage{
-    height: 50px;
-    width: 50px;
+.tileHealthClass{
+    font-family: 'Times New Roman', 'Georgia', 'Merriweather', 'Playfair Display';
+}
+.navbar-menu{
+    font-family: 'Nunito';
+}
+
+/* Navbar styles ends */
+
+
+.navbar {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.navbar-nav {
+  width: 96%;
+}
+
+.profileImage {
+  height: 40px;
+  width: 40px;
 }
 
 /* loader css */
@@ -186,9 +209,10 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-}
-
-.loader {
+    z-index: 9999; /* Ensure loader appears above other elements */
+  }
+  
+  .loader {
     border: 8px solid #f3f3f3;
     border-radius: 50%;
     border-top: 8px solid #3498db;
@@ -196,15 +220,34 @@
     height: 50px;
     -webkit-animation: spin 1s linear infinite; /* Safari */
     animation: spin 1s linear infinite;
-}
+  }
+  
+  /* Spinner animation */
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
-/* Spinner animation */
-@-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
-}
+  .form-header{
+    margin-top: 5px;
+    text-align: left;
+    font-family: 'Helvetica', 'Arial', 'Roboto', 'Open Sans';
+  }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+  .field-header{
+    font-family: 'Bebas Neue', 'Montserrat', 'Lobster', 'Roboto Condensed';
+    font-size: large;
+  }

@@ -6,8 +6,9 @@
     <title>Tile Health</title>
 
     <link rel="stylesheet" href="../style/styles.css" />
-    <!-- Link to CSS file -->
     <link rel="stylesheet" href="../style/footer.css" />
+
+    <!-- Link to CSS file -->
 
     <!-- CDN for bootstrap -->
     <link
@@ -29,7 +30,7 @@
     </div>
     <!-- navbar start -->
     <div>
-      <nav
+        <nav
         class="navbar navbar-expand-lg navColor"
         style="position: fixed; border-bottom: 1.5px solid black"
       >
@@ -112,26 +113,107 @@
         <hr />
       </nav>
     </div>
+
     <!-- navbar end  -->
 
-    <!-- <div id="navbar"></div> -->
-    <!-- Placeholder for the navbar -->
+    <!-- <div id="navbar"></div> Placeholder for the navbar -->
 
     <div class="container">
       <form class="custom-form">
-        <h3 class="form-header">Check statistics of a hospital</h3>
+        <h3 class="form-header">Enter Config Details</h3>
         <hr />
         <br />
-        <select id="hospitalDropdown" class="form-control" required>
-          <!-- Options will be dynamically added here -->
-        </select>
-        <br />
-        <label class="field-header"><b>Enter Date<span style="color: red">*</span></b></label>
-        
-        <div class="date-picker">
-          <input type="date" class="form-control" />
-        </div>
 
+        <div class="form-group">
+          <label for="medContextIndex" class="field-header"
+            ><b
+              >Medication Context Index<span style="color: red">*</span></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="medContextIndex"
+            placeholder="Enter Medication Context Index"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="filterLocationCodingIndex" class="field-header"
+            ><b
+              >Filter Location Coding Index<span style="color: red">*</span></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="filterLocationCodingIndex"
+            placeholder="Enter Filter Location Coding Index"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="filterLocationIdIndex" class="field-header"
+            ><b
+              >Filter Location Id Index<span style="color: red">*</span></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="filterLocationIdIndex"
+            placeholder="Enter Filter Location Id Index"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="preFilterEncounterCsnIndex" class="field-header"
+            ><b
+              >Prefilter Encounter CSN Index<span style="color: red"
+                >*</span
+              ></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="preFilterEncounterCsnIndex"
+            placeholder="Enter Prefilter Encounter CSN Index"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="preFilterEncounterTypeIndex" class="field-header"
+            ><b
+              >Prefilter Encounter Type Index<span style="color: red"
+                >*</span
+              ></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="preFilterEncounterTypeIndex"
+            placeholder="Enter Prefilter Encounter Type Index"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="preFilterEncounterClassIndex" class="field-header"
+            ><b
+              >Prefilter Encounter Class Index<span style="color: red"
+                >*</span
+              ></b
+            ></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="preFilterEncounterClassIndex"
+            placeholder="Enter Prefilter Encounter Class Index"
+            required
+          />
+        </div>
         <button
           type="submit"
           class="btn"
@@ -140,38 +222,6 @@
           Submit
         </button>
       </form>
-    </div>
-
-    <!-- Staistics table  -->
-
-    <div class="container mt-5" id="statisticsTable">
-      <div class="table-container">
-        <h2 style="color: #0b0909fd">Statistics Table</h2>
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Hospital Name</th>
-                <th>Count</th>
-                <th>Client ID</th>
-                <th>Patient First Name</th>
-                <th>Patient Last Name</th>
-                <th>Patient ID</th>
-                <th>Encounter ID</th>
-                <th>Base URL</th>
-                <th>Server URL</th>
-                <th>User ID</th>
-                <th>Date of Birth</th>
-                <th>Date</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Table body content will be generated dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
     <!-- footer starts -->
@@ -279,6 +329,6 @@
 
     <script src="../scripts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
-    <script src="../scripts/check_statistics.js"></script>
+    <script src="../scripts/add_config.js"></script>
   </body>
 </html>

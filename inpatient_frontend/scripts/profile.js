@@ -1,4 +1,9 @@
-// // profile information handle
+function setPreviousPage(){
+    localStorage.setItem("previousUrl", window.location.pathname);
+}
+setPreviousPage();
+
+// profile information handle
 document.getElementById("name").value = localStorage.getItem("loggedInName");
 document.getElementById("email").value = localStorage.getItem("loggedInEmail");
 
@@ -8,8 +13,10 @@ function logoutClicked(event) {
   event.preventDefault();
 
   // setting email, password as empty string
+  localStorage.setItem("loggedInName", "");
   localStorage.setItem("loggedInEmail", "");
-  localStorage.setItem("password", "");
+  localStorage.setItem("loggedInUserPermission", "");
+  localStorage.setItem("isLoggedIn", false);
 
   Swal.fire({
     icon: "success",
@@ -20,6 +27,8 @@ function logoutClicked(event) {
   });
 
   setTimeout(() => {
+    // Clear the input fields
+    document.getElementById("myForm").reset();
     window.location.href = "/inpatient_frontend/index.html";
   }, 2000);
 }
