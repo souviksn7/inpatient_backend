@@ -167,69 +167,87 @@
   overflow-x: auto;
 }
 
+
+/* Navbar styles starts */
+
+.tileHealthClass{
+    font-family: 'Times New Roman', 'Georgia', 'Merriweather', 'Playfair Display';
+}
+.navbar-menu{
+    font-family: 'Nunito';
+}
+
+/* Navbar styles ends */
+
+
 .navbar {
   top: 0;
   left: 0;
   width: 100%;
+  height: 70px;
   z-index: 1000; /* Ensure it's above other content */
 }
 
 .navbar-nav {
-  width: 95%;
+  width: 96%;
 }
-/* .navbar.navColor {
-    background-color: #e9ecef; 
-}
-.nav-item.active {
-    background-color: #f0f0f0; 
-} */
-
-/* My account button  */
 
 .profileImage {
-  height: 50px;
-  width: 50px;
+  height: 40px;
+  width: 40px;
 }
 
 /* loader css */
 
 .loader-container {
-  display: none; /* Initially hide loader */
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-}
+    display: none; /* Initially hide loader */
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    z-index: 9999; /* Ensure loader appears above other elements */
+  }
+  
+  .loader {
+    border: 8px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 8px solid #3498db;
+    width: 50px;
+    height: 50px;
+    -webkit-animation: spin 1s linear infinite; /* Safari */
+    animation: spin 1s linear infinite;
+  }
+  
+  /* Spinner animation */
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
 
-.loader {
-  border: 8px solid #f3f3f3;
-  border-radius: 50%;
-  border-top: 8px solid #3498db;
-  width: 50px;
-  height: 50px;
-  -webkit-animation: spin 1s linear infinite; /* Safari */
-  animation: spin 1s linear infinite;
-}
+  .form-header{
+    margin-top: 5px;
+    text-align: left;
+    font-family: 'Helvetica', 'Arial', 'Roboto', 'Open Sans';
+  }
 
-/* Spinner animation */
-@-webkit-keyframes spin {
-  0% {
-    -webkit-transform: rotate(0deg);
+  .field-header{
+    font-family: 'Bebas Neue', 'Montserrat', 'Lobster', 'Roboto Condensed';
+    font-size: large;
   }
-  100% {
-    -webkit-transform: rotate(360deg);
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}

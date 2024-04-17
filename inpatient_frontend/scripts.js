@@ -49,7 +49,6 @@ function urlGuard() {
 
 // Call the urlGuard function when the page loads
 window.onload = function () {
-  console.log("yeess");
   urlGuard();
 };
 
@@ -119,7 +118,7 @@ document
             // window.loginDetails = { email: "loginEmail", password: "loginPassword" };
 
             setTimeout(() => {
-              window.location.href = "./pages/hospital_registration.html";
+              window.location.href = "./pages/home_page.html";
             }, 2000);
 
             console.log("Login successful:", data.success);
@@ -264,3 +263,29 @@ function redirectToLicenseRegistration() {
       "/inpatient_frontend/pages/license_registration.html"; // Replace with the URL of the target page
   }, 500);
 }
+
+// redirect to home page
+function redirectToHomePage(){
+    // Display loader
+    document.querySelector(".loader-container").style.display = "flex";
+
+    // Redirect after 500ms
+    setTimeout(function () {
+      window.location.href =
+        "/inpatient_frontend/pages/home_page.html"; // Replace with the URL of the target page
+    }, 500);
+}
+
+// redirect to redirectToAddConfig page
+function redirectToAddConfig(){
+  // Display loader
+  document.querySelector(".loader-container").style.display = "flex";
+
+  // Redirect after 500ms
+  setTimeout(function () {
+    window.location.href =
+      "/inpatient_frontend/pages/add_config.html"; // Replace with the URL of the target page
+  }, 500);
+}
+
+

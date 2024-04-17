@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tile Health</title>
 
+    
     <link rel="stylesheet" href="../style/styles.css" />
-    <!-- Link to CSS file -->
     <link rel="stylesheet" href="../style/footer.css" />
+    <link rel="stylesheet" href="../style/home_page.css" />
+
+    <!-- Link to CSS file -->
 
     <!-- CDN for bootstrap -->
     <link
@@ -37,6 +40,7 @@
           class="navbar-brand nav-link"
           onclick="redirectToHomePage()"
           style="font-size: 30px; padding-left: 10px; padding-right: 25px"
+          id="homePage_a"
         >
           <b class="tileHealthClass">Tile Health</b>
         </a>
@@ -112,70 +116,90 @@
         <hr />
       </nav>
     </div>
+
     <!-- navbar end  -->
 
-    <!-- <div id="navbar"></div> -->
-    <!-- Placeholder for the navbar -->
-
     <div class="container">
-      <form class="custom-form">
-        <h3 class="form-header">Check statistics of a hospital</h3>
-        <hr />
-        <br />
-        <select id="hospitalDropdown" class="form-control" required>
-          <!-- Options will be dynamically added here -->
-        </select>
-        <br />
-        <label class="field-header"><b>Enter Date<span style="color: red">*</span></b></label>
-        
-        <div class="date-picker">
-          <input type="date" class="form-control" />
+      <div class="container-homepage">
+        <div>
+          <div class="card leftCard">
+            <canvas id="hitChart"></canvas>
+          </div>
+          <br />
+          <div class="card leftCard">
+            <canvas id="hospitalRegistrationChart"></canvas>
+          </div>
         </div>
-
-        <button
-          type="submit"
-          class="btn"
-          style="background-color: #7d2ae8; color: #fff"
-        >
-          Submit
-        </button>
-      </form>
-    </div>
-
-    <!-- Staistics table  -->
-
-    <div class="container mt-5" id="statisticsTable">
-      <div class="table-container">
-        <h2 style="color: #0b0909fd">Statistics Table</h2>
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Hospital Name</th>
-                <th>Count</th>
-                <th>Client ID</th>
-                <th>Patient First Name</th>
-                <th>Patient Last Name</th>
-                <th>Patient ID</th>
-                <th>Encounter ID</th>
-                <th>Base URL</th>
-                <th>Server URL</th>
-                <th>User ID</th>
-                <th>Date of Birth</th>
-                <th>Date</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Table body content will be generated dynamically -->
-            </tbody>
-          </table>
+        <div class="card rightCard">
+          <div style="display: flex">
+            <img src="../images/hospital-logo.png" id="hospital-logo" alt="" />
+            <!-- Total 34 Hospital registered -->
+            <div>
+              <p class="p1">Total Number of Hospitals registered</p>
+              <p class="p2">Count: 34</p>
+            </div>
+          </div>
+          <div>
+            <div>
+              <button
+                id="hopital-stat-button"
+                onclick="redirectToCheckStatistics()"
+              >
+                <img
+                  src="../images/statistics-logo.png"
+                  id="statistics-logo"
+                  alt=""
+                />&nbsp;&nbsp;&nbsp; See one hospital stats
+              </button>
+            </div>
+            <br />
+            <br />
+            <div>
+              <button
+                id="hospital-registration-button"
+                onclick="redirectToHospitalRegistration()"
+              >
+                <img
+                  src="../images/hospital-logo-1.png"
+                  id="hospital-logo-1"
+                  alt=""
+                />&nbsp;&nbsp;&nbsp; Register a hospital
+              </button>
+            </div>
+            <br />
+            <br />
+            <div>
+              <button
+                id="license-registraion-button"
+                onclick="redirectToLicenseRegistration()"
+              >
+                <img
+                  src="../images/hospital-license.png"
+                  id="statistics-logo"
+                  alt=""
+                />&nbsp;&nbsp;&nbsp; Register Hospital License
+              </button>
+            </div>
+            <br />
+            <br />
+            <div>
+              <button
+                id="add-config-button"
+                onclick="redirectToAddConfig()"
+              >
+                <img
+                  src="../images/add-configuration.png"
+                  id="add-config-logo-1"
+                  alt=""
+                />&nbsp;&nbsp;&nbsp; Add Config
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- footer starts -->
-
     <div>
       <!-- footer section start -->
       <footer id="footer" style="border-top: 1.5px solid black">
@@ -277,8 +301,9 @@
     </div>
     <!-- footer ends  -->
 
-    <script src="../scripts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
-    <script src="../scripts/check_statistics.js"></script>
+    <script src="../scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../scripts/home_page.js"></script>
   </body>
 </html>

@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tile Health</title>
 
-    <link rel="stylesheet" href="../style/styles.css"> <!-- Link to CSS file -->
+    <link rel="stylesheet" href="../style/styles.css" />
+    <!-- Link to CSS file -->
     <link rel="stylesheet" href="../style/footer.css" />
-
 
     <!-- CDN for bootstrap -->
     <link
@@ -24,43 +24,93 @@
       background-repeat: no-repeat;
     "
   >
-  <div class="loader-container">
-    <div class="loader"></div>
-  </div>
+    <div class="loader-container">
+      <div class="loader"></div>
+    </div>
     <!-- navbar start -->
     <div>
-      <nav class="navbar navbar-expand-lg navColor" style="position: fixed">
-        <a class="navbar-brand" style="font-size: 35px; padding-left: 10px; padding-right: 25px">
-           <b>Tile Health</b>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <nav
+      class="navbar navbar-expand-lg navColor"
+      style="position: fixed; border-bottom: 1.5px solid black"
+    >
+      <a
+        class="navbar-brand nav-link"
+        onclick="redirectToHomePage()"
+        style="font-size: 30px; padding-left: 10px; padding-right: 25px"
+      >
+        <b class="tileHealthClass">Tile Health</b>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+          <li class="nav-item active" id="hospitalRegistration">
+            <a
+              class="nav-link"
+              id="hospitalRegistration_a"
+              style="padding-right: 30px; font-size: 18px"
+              onclick="redirectToHospitalRegistration()"
+              ><b class="navbar-menu"
+                >Hospital Registration
+                <span class="sr-only">(current)</span></b
+              ></a
+            >
+          </li>
+          <li class="nav-item" id="licenseRegistration">
+            <a
+              class="nav-link"
+              id="licenseRegistration_a"
+              style="padding-right: 30px; font-size: 18px"
+              onclick="redirectToLicenseRegistration()"
+              ><b class="navbar-menu">License Registration</b></a
+            >
+          </li>
+          <li class="nav-item" id="checkStatistics">
+            <a
+              class="nav-link"
+              id="checkStatistics_a"
+              style="padding-right: 30px; font-size: 18px"
+              onclick="redirectToCheckStatistics()"
+              ><b class="navbar-menu">Check Statistics</b></a
+            >
+          </li>
+          <li class="nav-item" id="addConfig">
+              <a
+                class="nav-link"
+                id="addConfig_a"
+                style="padding-right: 30px; font-size: 18px"
+                onclick="redirectToAddConfig()"
+                ><b class="navbar-menu">Add Config</b></a
+              >
+            </li>
+        </ul>
+
+        <div>
           <ul class="navbar-nav">
-            <li class="nav-item active" id="hospitalRegistration">
-              <a class="nav-link nav-link-ltr" id="hospitalRegistration_a" style="padding-right: 30px; font-size: 18px" onclick="redirectToHospitalRegistration()"><b>Hospital Registration <span class="sr-only">(current)</span></b></a>
-            </li>
-            <li class="nav-item" id="licenseRegistration">
-              <a class="nav-link nav-link-ltr" id="licenseRegistration_a" style="padding-right: 30px; font-size: 18px" onclick="redirectToLicenseRegistration()"><b>License Registration</b></a>
-            </li>
-            <li class="nav-item" id="checkStatistics">
-              <a class="nav-link nav-link-ltr" id="checkStatistics_a" style="padding-right: 30px; font-size: 18px" onclick="redirectToCheckStatistics()"><b>Check Statistics</b></a>
+            <li class="nav-item">
+              <a onclick="redirectToProfilePage()"
+              class="nav-link"
+                ><img
+                  src="../images/profile.png"
+                  alt="img"
+                  class="profileImage"
+              /></a>
             </li>
           </ul>
+        </div>
+      </div>
 
-
-           <div class="dropdown">
-              <ul class="navbar-nav">
-                  <li class="nav-item">
-                    <a onclick="redirectToProfilePage()"><img src="../images/profile.png" alt="img" class="profileImage"></a>
-                  </li>
-              </ul>
-           </div>
-        </div> 
-
-       <hr>
-      </nav>
+      <hr />
+    </nav>
     </div>
 
     <!-- navbar end  -->
@@ -70,9 +120,9 @@
 
     <div class="container">
       <form class="custom-form">
-        <h3 style="color: #090707fd">Register Hospital license</h3>
-          <hr>
-          <br>
+        <h3 class="form-header">Register Hospital license</h3>
+        <hr />
+        <br />
 
         <select id="hospitalDropdown" class="form-control" required>
           <!-- Options will be dynamically added here -->
@@ -80,7 +130,7 @@
 
         <br />
         <div class="form-group">
-          <label for="maxHitLimit"
+          <label for="maxHitLimit" class="field-header"
             ><b>Enter max hit limit<span style="color: red">*</span></b></label
           >
           <input
@@ -102,114 +152,111 @@
       </form>
     </div>
 
-        <!-- footer starts -->
+    <!-- footer starts -->
 
-    <!-- footer section start -->
-    <footer id="footer">
-      <div class="footer-container">
-        <div class="row">
-          <div class="col-md-3">
-            <h1>
-              <b>Tile Health</b>
-            </h1>
-            <div class="footer-about">
-              <p>
-                Tile Health Description
-              </p>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="useful-link">
-              <h2>Useful Links</h2>
-              <img
-                src=""
-                alt=""
-                class="img-fluid"
-              />
-              <div class="use-links">
-                <li>
-                  <a href=""
-                    ><i class="fa-solid fa-angles-right"></i> Home</a
-                  >
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-solid fa-angles-right"></i> About Us</a
-                  >
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-solid fa-angles-right"></i> Contact</a
-                  >
-                </li>
+    <div>
+      <!-- footer section start -->
+      <footer id="footer" style="border-top: 1.5px solid black">
+        <div class="footer-container">
+          <div class="row">
+            <div class="col-md-3">
+              <h3>
+                <b>Tile Health</b>
+              </h3>
+              <div class="footer-about">
+                <p>Tile Health Description</p>
               </div>
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="social-links">
-              <h2>Follow Us</h2>
-              <img src="" alt="" />
-              <div class="social-icons">
-                <li>
-                  <a href=""
-                    ><i class="fa-brands fa-facebook-f"></i> Facebook</a
-                  >
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-brands fa-instagram"></i> Instagram</a
-                  >
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-brands fa-linkedin-in"></i> Linkedin</a
-                  >
-                </li>
+            <div class="col-md-3">
+              <div class="useful-link">
+                <h5>Useful Links</h5>
+                <img
+                  src="./assets/images/about/home_line.png"
+                  alt=""
+                  class="img-fluid"
+                />
+                <div class="use-links">
+                  <li>
+                    <a href=""><i class="fa-solid fa-angles-right"></i> Home</a>
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-solid fa-angles-right"></i> About Us</a
+                    >
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-solid fa-angles-right"></i> Contact</a
+                    >
+                  </li>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="address">
-              <h2>Address</h2>
-              <img
-                src=""
-                alt=""
-                class="img-fluid"
-              />
-              <div class="address-links">
-                <li class="address1">
-                  <i class="fa-solid fa-location-dot"></i> Example Address
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-solid fa-phone"></i> Example Phone number</a
-                  >
-                </li>
-                <li>
-                  <a href=""
-                    ><i class="fa-solid fa-envelope"></i> Example Email</a
-                  >
-                </li>
+            <div class="col-md-3">
+              <div class="social-links">
+                <h5>Follow Us</h5>
+                <img src="./assets/images/about/home_line.png" alt="" />
+                <div class="social-icons">
+                  <li>
+                    <a href=""
+                      ><i class="fa-brands fa-facebook-f"></i> Facebook</a
+                    >
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-brands fa-instagram"></i> Instagram</a
+                    >
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-brands fa-linkedin-in"></i> Linkedin</a
+                    >
+                  </li>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="address">
+                <h5>Address</h5>
+                <img
+                  src="./assets/images/about/home_line.png"
+                  alt=""
+                  class="img-fluid"
+                />
+                <div class="address-links">
+                  <li class="address1">
+                    <i class="fa-solid fa-location-dot"></i> Example Address
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-solid fa-phone"></i> Example Phone number</a
+                    >
+                  </li>
+                  <li>
+                    <a href=""
+                      ><i class="fa-solid fa-envelope"></i> Example Email</a
+                    >
+                  </li>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </footer>
-    <!-- footer section end -->
-    <!-- footer copy right section start -->
-    <section id="copy-right">
-      <div class="copy-right-sec">
-        <i class="fa-solid fa-copyright"></i> © 2024 Tile Health | All Rights Reserved 
-      </div>
-    </section>
-    <!-- footer copy right section end -->
-
+      </footer>
+      <!-- footer section end -->
+      <!-- footer copy right section start -->
+      <section id="copy-right" style="border-top: 1.5px solid black">
+        <div class="copy-right-sec">
+          <i class="fa-solid fa-copyright"></i> © 2024 Tile Health | All Rights
+          Reserved
+        </div>
+      </section>
+      <!-- footer copy right section end -->
+    </div>
     <!-- footer ends  -->
 
     <script src="../scripts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
     <script src="../scripts/license_registration.js"></script>
-    
   </body>
 </html>
