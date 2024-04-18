@@ -210,8 +210,20 @@ const addConfig = async (data) => {
    
 
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return { error };
+  }
+};
+
+const totalHitsPerDay = async () =>{
+  try{
+     await client.query("BEGIN");
+     const query = `SELECT date_record AS date, SUM(count) AS total_count FROM counter GROUP BY date_record;`;
+     const result = await client.query(query);
+     await client.query('COMMIT');
+     return result
+  }catch(error){
+    return {error};
   }
 };
 
@@ -223,4 +235,5 @@ module.exports = {
   signup,
   login,
   addConfig,
+  totalHitsPerDay
 };

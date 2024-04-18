@@ -83,6 +83,15 @@ const addConfigController = async (req,res) =>{
   }catch(error){
     res.status(401).send(error)
   }
+};
+
+const totalHitsPerDayController = async (req,res)=> {
+  try{
+    const response = await frontendService.totalHitsPerDayService();
+    res.status(200).send(response)
+  }catch(error){
+    res.status(401).send(error)
+  }
 }
 
 module.exports = {
@@ -92,5 +101,6 @@ module.exports = {
   addLisenceController,
   loginController,
   signupController,
-  addConfigController
+  addConfigController,
+  totalHitsPerDayController
 };
