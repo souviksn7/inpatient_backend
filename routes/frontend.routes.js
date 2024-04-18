@@ -29,5 +29,7 @@ router.post('/login',frontendController.loginController);
 
 router.post('/addConfig',frontendController.addConfigController);
 
+router.get('/totalHitsPerDay', frontendController.totalHitsPerDayController)
+
 
 module.exports = router;
