@@ -218,14 +218,36 @@ const addConfig = async (data) => {
 const totalHitsPerDay = async () =>{
   try{
      await client.query("BEGIN");
-     const query = `SELECT date_record AS date, SUM(count) AS total_count FROM counter GROUP BY date_record;`;
+     const query = `SELECT DATE(date_record::date + INTERVAL '1 day') AS date,
+     SUM(count) AS total_count
+FROM counter
+WHERE TO_DATE(date_record, 'YYYY-MM-DD') >= CURRENT_DATE - INTERVAL '6 days'
+GROUP BY DATE(date_record::date);`;
      const result = await client.query(query);
      await client.query('COMMIT');
      return result
   }catch(error){
+    console.log(error)
     return {error};
   }
 };
+
+const hospitalRegPerDay = async () =>{
+  try{
+    await client.query("BEGIN");
+    const query = `SELECT DATE(date_field + INTERVAL '1 day') AS date,
+    COUNT(*) AS hospitals_count
+FROM clients
+GROUP BY DATE(date_field + INTERVAL '1 day');
+`;
+    const result = await client.query(query);
+    console.log(result.rows)
+    await client.query('COMMIT');
+    return result;
+  }catch(error){
+    return {error}
+  }
+}
 
 module.exports = {
   getHospitalDetails,
@@ -235,5 +257,6 @@ module.exports = {
   signup,
   login,
   addConfig,
-  totalHitsPerDay
+  totalHitsPerDay,
+  hospitalRegPerDay
 };
