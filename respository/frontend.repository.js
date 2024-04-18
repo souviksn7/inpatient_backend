@@ -238,6 +238,7 @@ const hospitalRegPerDay = async () =>{
     const query = `SELECT DATE(date_field + INTERVAL '1 day') AS date,
     COUNT(*) AS hospitals_count
 FROM clients
+WHERE date_field >= CURRENT_DATE - INTERVAL '6 days'
 GROUP BY DATE(date_field + INTERVAL '1 day');
 `;
     const result = await client.query(query);
@@ -249,6 +250,18 @@ GROUP BY DATE(date_field + INTERVAL '1 day');
   }
 }
 
+const numHospitalReg = async () =>{
+  try{
+    await client.query("BEGIN");
+    const query =`SELECT COUNT(*) AS hospital_count from clients;`;
+    const result = await client.query(query);
+    await client.query('END');
+    return result
+
+  }catch(error){
+    return { error }
+  }
+}
 module.exports = {
   getHospitalDetails,
   addHospital,
@@ -258,5 +271,6 @@ module.exports = {
   login,
   addConfig,
   totalHitsPerDay,
-  hospitalRegPerDay
+  hospitalRegPerDay,
+  numHospitalReg
 };

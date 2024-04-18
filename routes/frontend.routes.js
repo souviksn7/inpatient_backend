@@ -31,6 +31,7 @@ router.post('/addConfig',frontendController.addConfigController);
 
 router.get('/totalHitsPerDay', frontendController.totalHitsPerDayController);
 router.get('/hospitalRegPerDay', frontendController.hospitalRegPerDayController);
+router.get('/numHospitalReg', frontendController.numHospitalRegController)
 
 
 module.exports = router;

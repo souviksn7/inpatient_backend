@@ -3,8 +3,11 @@ const frontendRepository = require("../respository/frontend.repository");
 const getHospitalDataService = async () => {
   try {
     const result = frontendRepository.getHospitalDetails();
-
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -13,8 +16,11 @@ const getHospitalDataService = async () => {
 const addHospitalService = async (data) => {
   try {
     const result = await frontendRepository.addHospital(data);
-
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -33,8 +39,11 @@ const getStatsService = async (data) => {
 const addLisenceService = async (data) => {
   try {
     const result = await frontendRepository.addLisence(data);
-
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -43,7 +52,11 @@ const addLisenceService = async (data) => {
 const signupService = async (data) => {
   try {
     const result = await frontendRepository.signup(data);
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -52,7 +65,11 @@ const signupService = async (data) => {
 const loginService = async (data) => {
   try {
     const result = frontendRepository.login(data);
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -61,7 +78,11 @@ const loginService = async (data) => {
 const addConfigService = async (data) => {
   try {
     const result = await frontendRepository.addConfig(data);
-    return result;
+    if(result.error){
+        return {error};
+    }else{
+        return result;
+    }
   } catch (error) {
     return { error };
   }
@@ -70,8 +91,11 @@ const addConfigService = async (data) => {
 const totalHitsPerDayService = async () => {
   try {
     const result = await frontendRepository.totalHitsPerDay();
-    
-    return result.rows;
+    if(result.error){
+        return {error};
+    }else{
+        return result.rows;
+    }
   } catch (error) {
     return { error };
   }
@@ -80,12 +104,33 @@ const totalHitsPerDayService = async () => {
 const hospitalRegPerDayService = async () => {
     try{
         const result = await frontendRepository.hospitalRegPerDay();
+        if(result.error){
+            return {error};
+        }else{
+            return result.rows;
+        }
         // console.log(result)
-        return result.rows;
+        
     }catch(error){
         return {error};
     }
 }
+
+const numHospitalRegService = async () => {
+    try{
+        const result = await frontendRepository.numHospitalReg();
+        if(result.error){
+            return {error};
+        }else{
+            return result.rows;
+        }
+        // console.log(result)
+        
+    }catch(error){
+        return {error};
+    }
+}
+
 
 module.exports = {
   getHospitalDataService,
@@ -96,5 +141,6 @@ module.exports = {
   loginService,
   addConfigService,
   totalHitsPerDayService,
-  hospitalRegPerDayService
+  hospitalRegPerDayService,
+  numHospitalRegService
 };
