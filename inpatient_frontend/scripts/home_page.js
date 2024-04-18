@@ -1,59 +1,79 @@
 // set previous usrl
 function setPreviousPage() {
-    // Get the element by its ID
-    var element = document.getElementById("homePage_a");
-  
-    // Change the opacity to 1(100%)
-    element.style.opacity = "1";
-    localStorage.setItem("previousUrl", window.location.pathname);
-  }
-  setPreviousPage();
-  
+  // Get the element by its ID
+  var element = document.getElementById("homePage_a");
 
+  // Change the opacity to 1(100%)
+  element.style.opacity = "1";
+  localStorage.setItem("previousUrl", window.location.pathname);
+}
+setPreviousPage();
 
 // handle chart starts
 
-const ctxHits = document.getElementById('hitChart');
+const ctxHits = document.getElementById("hitChart");
 
-  new Chart(ctxHits, {
-    type: 'line',
+new Chart(ctxHits, {
+    type: "line",
     data: {
-      labels: ['Wednesday','Thursday', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Today'],
-      datasets: [{
-        label: '# of total hits each day last week',
-        data: [100, 120, 190, 30, 50, 20, 30],
-        borderWidth: 1,
-        borderColor: 'red', // Primary color (blue)
-      }]
+      labels: [
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        "Monday",
+        "Today",
+      ],
+      datasets: [
+        {
+          label: "Number of total hits each day last week",
+          data: [100, 120, 190, 30, 50, 20, 30],
+          borderWidth: 1,
+          borderColor: "red", // Primary color (blue)
+        },
+      ],
     },
     options: {
       scales: {
         y: {
-          beginAtZero: true
-        }
-      }
-    }
+          beginAtZero: true,
+        },
+      },
+    },
   });
+  
+const ctxHospitalRegistration = document.getElementById(
+  "hospitalRegistrationChart"
+);
 
-  const ctxHospitalRegistration = document.getElementById('hospitalRegistrationChart');
-
-  new Chart(ctxHospitalRegistration, {
-    type: 'bar',
-    data: {
-      labels: ['Wednesday','Thursday', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Today'],
-      datasets: [{
-        label: '# of hospital registration each day last week',
+new Chart(ctxHospitalRegistration, {
+  type: "bar",
+  data: {
+    labels: [
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+      "Monday",
+      "Today",
+    ],
+    datasets: [
+      {
+        label: "Number of hospital registration each day last week",
         data: [10, 12, 19, 3, 5, 2, 3],
-        borderWidth: 1
-      }]
+        borderWidth: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
     },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
+  },
+});
 
 // handle charts ends

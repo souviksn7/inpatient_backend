@@ -93,3 +93,7 @@
 #add-config-button:hover {
   transform: translateY(-10px); /* Move button 5px up on hover */
 }
+
+.homepage-button{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
