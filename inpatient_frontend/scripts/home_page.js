@@ -1,5 +1,5 @@
 // set previous usrl
-function setPreviousPage() {
+function onloadThisPage() {
   // Get the element by its ID
   var element = document.getElementById("homePage_a");
 
@@ -7,7 +7,19 @@ function setPreviousPage() {
   element.style.opacity = "1";
   localStorage.setItem("previousUrl", window.location.pathname);
 }
-setPreviousPage();
+onloadThisPage();
+
+var lastWeek = {
+    "firstDay": "",
+    "secondDay": "",
+    "thirdDay": "",
+    "fourthDay": "",
+    "fifthDay": "",
+    "sixthDay": "",
+    "today": ""
+}
+
+
 
 // handle chart starts
 
