@@ -94,6 +94,16 @@ const totalHitsPerDayController = async (req,res)=> {
   }
 }
 
+const hospitalRegPerDayController = async (req,res)=> {
+  try{
+    const response = await frontendService.hospitalRegPerDayService();
+    
+    res.status(200).send(response)
+  }catch(error){
+    res.status(401).send(error)
+  }
+}
+
 module.exports = {
   getHospitalDataController,
   addHospitalController,
@@ -102,5 +112,6 @@ module.exports = {
   loginController,
   signupController,
   addConfigController,
-  totalHitsPerDayController
+  totalHitsPerDayController,
+  hospitalRegPerDayController
 };

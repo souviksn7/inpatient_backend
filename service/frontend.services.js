@@ -70,11 +70,22 @@ const addConfigService = async (data) => {
 const totalHitsPerDayService = async () => {
   try {
     const result = await frontendRepository.totalHitsPerDay();
+    
     return result.rows;
   } catch (error) {
     return { error };
   }
 };
+
+const hospitalRegPerDayService = async () => {
+    try{
+        const result = await frontendRepository.hospitalRegPerDay();
+        // console.log(result)
+        return result.rows;
+    }catch(error){
+        return {error};
+    }
+}
 
 module.exports = {
   getHospitalDataService,
@@ -84,5 +95,6 @@ module.exports = {
   signupService,
   loginService,
   addConfigService,
-  totalHitsPerDayService
+  totalHitsPerDayService,
+  hospitalRegPerDayService
 };
