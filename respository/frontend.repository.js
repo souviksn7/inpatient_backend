@@ -238,6 +238,7 @@ const hospitalRegPerDay = async () =>{
     const query = `SELECT DATE(date_field + INTERVAL '1 day') AS date,
     COUNT(*) AS hospitals_count
 FROM clients
+WHERE date_field >= CURRENT_DATE - INTERVAL '6 days'
 GROUP BY DATE(date_field + INTERVAL '1 day');
 `;
     const result = await client.query(query);
