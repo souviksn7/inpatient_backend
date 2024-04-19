@@ -25,6 +25,7 @@ const getHospitalDetails = async (clientId) => {
 
 const addHospital = async (data) => {
   try {
+    // console.log(data)
     await client.query("BEGIN");
 
     let query = `SELECT * FROM clients WHERE clientid_dev ='${data.clientid_dev}' or clientid_prod='${data.clientid_prod}'`;
@@ -34,12 +35,12 @@ const addHospital = async (data) => {
     if (result.rowCount > 0) {
       return { error: "Client Id DEV or PROD already exists" };
     } else {
-      query = `INSERT INTO clients (clientid_dev, clientid_prod, hospital_name, description) 
-            VALUES ('${data.clientid_dev}', '${data.clientid_prod}', '${data.hospital_name}', '${data.description}')`;
+      query = `INSERT INTO clients (clientid_dev, clientid_prod, hospital_name, description,allowcustomhosts) 
+            VALUES ('${data.clientid_dev}', '${data.clientid_prod}', '${data.hospital_name}', '${data.description}',${data.allowcustomhosts})`;
 
       result = await client.query(query);
       await client.query("COMMIT");
-      console.log(result);
+      // console.log(result);
       return { message: "Hospital added successfully" };
     }
   } catch (error) {
