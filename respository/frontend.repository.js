@@ -25,6 +25,7 @@ const getHospitalDetails = async (clientId) => {
 
 const addHospital = async (data) => {
   try {
+    // console.log(data)
     await client.query("BEGIN");
 
     let query = `SELECT * FROM clients WHERE clientid_dev ='${data.clientid_dev}' or clientid_prod='${data.clientid_prod}'`;
@@ -34,12 +35,12 @@ const addHospital = async (data) => {
     if (result.rowCount > 0) {
       return { error: "Client Id DEV or PROD already exists" };
     } else {
-      query = `INSERT INTO clients (clientid_dev, clientid_prod, hospital_name, description) 
-            VALUES ('${data.clientid_dev}', '${data.clientid_prod}', '${data.hospital_name}', '${data.description}')`;
+      query = `INSERT INTO clients (clientid_dev, clientid_prod, hospital_name, description,allowcustomhosts) 
+            VALUES ('${data.clientid_dev}', '${data.clientid_prod}', '${data.hospital_name}', '${data.description}',${data.allowcustomhosts})`;
 
       result = await client.query(query);
       await client.query("COMMIT");
-      console.log(result);
+      // console.log(result);
       return { message: "Hospital added successfully" };
     }
   } catch (error) {
@@ -218,7 +219,7 @@ const addConfig = async (data) => {
 const totalHitsPerDay = async () =>{
   try{
      await client.query("BEGIN");
-     const query = `SELECT DATE(date_record::date + INTERVAL '1 day') AS date,
+     const query = `SELECT DATE(date_record::date) AS date,
      SUM(count) AS total_count
 FROM counter
 WHERE TO_DATE(date_record, 'YYYY-MM-DD') >= CURRENT_DATE - INTERVAL '6 days'
@@ -235,11 +236,11 @@ GROUP BY DATE(date_record::date);`;
 const hospitalRegPerDay = async () =>{
   try{
     await client.query("BEGIN");
-    const query = `SELECT DATE(date_field + INTERVAL '1 day') AS date,
+    const query = `SELECT DATE(date_field ) AS date,
     COUNT(*) AS hospitals_count
 FROM clients
 WHERE date_field >= CURRENT_DATE - INTERVAL '6 days'
-GROUP BY DATE(date_field + INTERVAL '1 day');
+GROUP BY DATE(date_field);
 `;
     const result = await client.query(query);
     console.log(result.rows)
