@@ -219,7 +219,7 @@ const addConfig = async (data) => {
 const totalHitsPerDay = async () =>{
   try{
      await client.query("BEGIN");
-     const query = `SELECT DATE(date_record::date + INTERVAL '1 day') AS date,
+     const query = `SELECT DATE(date_record::date) AS date,
      SUM(count) AS total_count
 FROM counter
 WHERE TO_DATE(date_record, 'YYYY-MM-DD') >= CURRENT_DATE - INTERVAL '6 days'
@@ -236,11 +236,11 @@ GROUP BY DATE(date_record::date);`;
 const hospitalRegPerDay = async () =>{
   try{
     await client.query("BEGIN");
-    const query = `SELECT DATE(date_field + INTERVAL '1 day') AS date,
+    const query = `SELECT DATE(date_field ) AS date,
     COUNT(*) AS hospitals_count
 FROM clients
 WHERE date_field >= CURRENT_DATE - INTERVAL '6 days'
-GROUP BY DATE(date_field + INTERVAL '1 day');
+GROUP BY DATE(date_field);
 `;
     const result = await client.query(query);
     console.log(result.rows)
