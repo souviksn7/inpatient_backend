@@ -25,6 +25,8 @@ function urlGuard() {
     "/inpatient_frontend/pages/hospital_registration.html",
     "/inpatient_frontend/pages/license_registration.html",
     "/inpatient_frontend/pages/profile.html",
+    "/inpatient_frontend/pages/add_config.html",
+    "/inpatient_frontend/pages/home_page.html"
   ];
 
   // login,signup urls

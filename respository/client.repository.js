@@ -75,16 +75,16 @@ const updateCounter = async (patientId, clientId) => {
 const clientConfigPath = async (clientId) => {
   try {
     await client.query("BEGIN");
-    //  console.log(clientId)
+     console.log(clientId)
     const query = `SELECT * FROM config where hospital_id = ${clientId}`;
 
     const result = await client.query(query);
-    //  console.log("kjsflkjsdklfjs",result)
+     console.log("kjsflkjsdklfjs",result)
     if(result.rowCount>0){
       return result;
     }
     else{
-      result.rows = [{
+      return  {
         medContextIndex:".7.2.798268",
         filterLocationCodingIndex:".7.10.688867.4150",
         filterLocationIdIndex:".7.2.686980",
@@ -92,7 +92,7 @@ const clientConfigPath = async (clientId) => {
         preFilterEncounterTypeIndex:".7.10.698084.30",
         preFilterEncounterClassIndex:".7.10.698084.10110"
     
-    }]
+    }
       return  result
     }
     

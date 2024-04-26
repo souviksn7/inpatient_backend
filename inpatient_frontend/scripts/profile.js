@@ -4,8 +4,8 @@ function setPreviousPage(){
 setPreviousPage();
 
 // profile information handle
-document.getElementById("name").value = localStorage.getItem("loggedInName");
-document.getElementById("email").value = localStorage.getItem("loggedInEmail");
+document.getElementById("name-id").textContent = localStorage.getItem("loggedInName");
+document.getElementById("email-id").textContent = localStorage.getItem("loggedInEmail");
 
 // handle logout
 function logoutClicked(event) {
@@ -32,3 +32,5 @@ function logoutClicked(event) {
     window.location.href = "/inpatient_frontend/index.html";
   }, 2000);
 }
+
+

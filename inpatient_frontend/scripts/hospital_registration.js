@@ -4,7 +4,7 @@ function setPreviousPage(){
             
   // Change the opacity to 1(100%)
   element.style.opacity = "1";
-    localStorage.setItem("previousUrl", window.location.pathname);
+  localStorage.setItem("previousUrl", window.location.pathname);
 }
 setPreviousPage();
 
@@ -26,12 +26,15 @@ form.addEventListener('submit', function(event) {
     const clientIdProdValue = document.getElementById('clientIdProd').value;
     const clientIdDevValue = document.getElementById('clientIdDev').value;
     const hospitalDescriptionValue = document.getElementById('hospitalDescription').value;
+    const allowCustomHostsValue = document.getElementById('allowCustomHosts').checked;
+
 
     const hospitalDetails = {
         clientid_dev: clientIdDevValue,
         clientid_prod: clientIdProdValue,
         hospital_name: hospitalNameValue,
-        description: hospitalDescriptionValue
+        description: hospitalDescriptionValue,
+        allowcustomhosts: allowCustomHostsValue
     };
 
     console.log(hospitalDetails);

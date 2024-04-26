@@ -5,20 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tile Health</title>
 
-    
-    <link rel="stylesheet" href="../style/styles.css" />
-    <link rel="stylesheet" href="../style/footer.css" />
-    <link rel="stylesheet" href="../style/home_page.css" />
-
-    <!-- Link to CSS file -->
-
     <!-- CDN for bootstrap -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
       crossorigin="anonymous"
     />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <link rel="stylesheet" href="../style/navbar-slider.css" />
+    <link rel="stylesheet" href="../style/home_page.css" />
+    <link rel="stylesheet" href="../style/styles.css" />
+    <link rel="stylesheet" href="../style/footer.css" />
   </head>
   <body
     style="
@@ -30,169 +36,298 @@
     <div class="loader-container">
       <div class="loader"></div>
     </div>
-    <!-- navbar start -->
-    <div>
-      <nav
-        class="navbar navbar-expand-lg navColor"
-        style="position: fixed; border-bottom: 1.5px solid black"
+    <!-- Bootstrap NavBar -->
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+      <button
+        class="navbar-toggler navbar-toggler-right"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNavDropdown"
+        aria-controls="navbarNavDropdown"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
       >
-        <a
-          class="navbar-brand nav-link"
-          onclick="redirectToHomePage()"
-          style="font-size: 30px; padding-left: 10px; padding-right: 25px"
-          id="homePage_a"
-        >
-          <b class="tileHealthClass">Tile Health</b>
-        </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarNavDropdown"
-          aria-controls="navbarNavDropdown"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-          <ul class="navbar-nav">
-            <li class="nav-item active" id="hospitalRegistration">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a
+        class="navbar-brand"
+        href="#"
+        onclick="redirectToHomePage()"
+        id="homePage_a"
+      >
+        <img
+          src="../images/Tile_health_logo.jpg"
+          width="30"
+          height="30"
+          class="d-inline-block align-top"
+          alt=""
+        />
+        <span class="menu-collapsed">Tile Health</span>
+      </a>
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#" onclick="redirectToProfilePage()"
+              ><img
+                src="../images/profile_logo.png"
+                alt=""
+                class="profileImage"
+            /></a>
+          </li>
+          <!-- This menu is hidden in bigger devices with d-sm-none. 
+             The sidebar isn't proper for smaller screens imo, so this dropdown menu can keep all the useful sidebar itens exclusively for smaller screens  -->
+          <li class="nav-item dropdown d-sm-block d-md-none">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="smallerscreenmenu"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Dashboard
+            </a>
+            <div class="dropdown-menu" aria-labelledby="smallerscreenmenu">
               <a
-                class="nav-link"
-                id="hospitalRegistration_a"
-                style="padding-right: 30px; font-size: 18px"
+                class="dropdown-item"
+                id="hospital-registraion"
+                href="#"
                 onclick="redirectToHospitalRegistration()"
-                ><b class="navbar-menu"
-                  >Hospital Registration
-                  <span class="sr-only">(current)</span></b
-                ></a
+                >Hospital Registration</a
               >
-            </li>
-            <li class="nav-item" id="licenseRegistration">
               <a
-                class="nav-link"
-                id="licenseRegistration_a"
-                style="padding-right: 30px; font-size: 18px"
+                class="dropdown-item"
+                href="#"
                 onclick="redirectToLicenseRegistration()"
-                ><b class="navbar-menu">License Registration</b></a
+                >License Registration</a
               >
-            </li>
-            <li class="nav-item" id="checkStatistics">
               <a
-                class="nav-link"
-                id="checkStatistics_a"
-                style="padding-right: 30px; font-size: 18px"
+                class="dropdown-item"
+                href="#"
                 onclick="redirectToCheckStatistics()"
-                ><b class="navbar-menu">Check Statistics</b></a
+                >Check Statistics</a
               >
-            </li>
-            <li class="nav-item" id="addConfig">
-                <a
-                  class="nav-link"
-                  id="addConfig_a"
-                  style="padding-right: 30px; font-size: 18px"
-                  onclick="redirectToAddConfig()"
-                  ><b class="navbar-menu">Add Config</b></a
-                >
-              </li>
-          </ul>
-
-          <div>
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a onclick="redirectToProfilePage()"
-                class="nav-link"
-                  ><img
-                    src="../images/profile.png"
-                    alt="img"
-                    class="profileImage"
-                /></a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <hr />
-      </nav>
-    </div>
+              <a
+                class="dropdown-item"
+                id="add-config"
+                href="#"
+                onclick="redirectToAddConfig()"
+                >Add Config</a
+              >
+            </div>
+          </li>
+          <!-- Smaller devices menu END -->
+        </ul>
+      </div>
+    </nav>
+    <!-- NavBar END -->
 
     <!-- navbar end  -->
 
-    <div class="container">
-      <div class="container-homepage">
-        <div>
-          <div class="card leftCard">
-            <canvas id="hitChart"></canvas>
+    <div class="row" id="body-row">
+      <!-- Sidebar -->
+      <div id="sidebar-container" class="sidebar-expanded d-none d-md-block">
+        <!-- d-* hiddens the Sidebar in smaller devices. Its itens can be kept on the Navbar 'Menu' -->
+        <!-- Bootstrap List Group -->
+        <ul class="list-group">
+          <!-- Separator with title -->
+          <li
+            class="list-group-item sidebar-separator-title text-muted d-flex align-items-center menu-collapsed"
+          >
+            <small>MAIN MENU</small>
+          </li>
+          <!-- /END Separator -->
+          <!-- Menu with submenu -->
+          <a
+            href="#submenu1"
+            data-toggle="collapse"
+            aria-expanded="false"
+            class="bg-dark list-group-item list-group-item-action flex-column align-items-start"
+          >
+            <div class="d-flex w-100 justify-content-start align-items-center">
+              <span class="fa fa-dashboard fa-fw mr-3"></span>
+              <span class="menu-collapsed">Dashboard</span>
+              <span class="submenu-icon ml-auto"></span>
+            </div>
+          </a>
+          <!-- Submenu content -->
+          <div id="submenu1" class="collapse sidebar-submenu">
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+              onclick="redirectToHospitalRegistration()"
+              id="hospitalRegistration_a"
+            >
+              <span class="menu-collapsed">Hospital Registration</span>
+            </a>
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+              onclick="redirectToLicenseRegistration()"
+              id="licenseRegistration_a"
+            >
+              <span class="menu-collapsed">License Registration</span>
+            </a>
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+              onclick="redirectToCheckStatistics()"
+              id="checkStatistics_a"
+            >
+              <span class="menu-collapsed">Check Statistics</span>
+            </a>
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+              onclick="redirectToAddConfig()"
+              id="addConfig_a"
+            >
+              <span class="menu-collapsed">Add Config</span>
+            </a>
+          </div>
+          <a
+            href="#submenu2"
+            data-toggle="collapse"
+            aria-expanded="false"
+            class="bg-dark list-group-item list-group-item-action flex-column align-items-start"
+          >
+            <div class="d-flex w-100 justify-content-start align-items-center">
+              <span class="fa fa-user fa-fw mr-3"></span>
+              <span class="menu-collapsed">Profile</span>
+              <span class="submenu-icon ml-auto"></span>
+            </div>
+          </a>
+          <!-- Submenu content -->
+          <div id="submenu2" class="collapse sidebar-submenu">
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+              onclick="redirectToProfilePage()"
+            >
+              <span class="menu-collapsed">Settings</span>
+            </a>
+            <a
+              href="#"
+              class="list-group-item list-group-item-action bg-dark text-white"
+            >
+              <span class="menu-collapsed">Password</span>
+            </a>
+          </div>
+
+          <!-- Separator without title -->
+          <li class="list-group-item sidebar-separator menu-collapsed"></li>
+          <!-- /END Separator -->
+          <a href="#" class="bg-dark list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-start align-items-center">
+              <span class="fa fa-question fa-fw mr-3"></span>
+              <span class="menu-collapsed">Help</span>
+            </div>
+          </a>
+          <a
+            href="#top"
+            data-toggle="sidebar-colapse"
+            class="bg-dark list-group-item list-group-item-action d-flex align-items-center"
+          >
+            <div class="d-flex w-100 justify-content-start align-items-center">
+              <span id="collapse-icon" class="fa fa-2x mr-3"></span>
+              <span id="collapse-text" class="menu-collapsed">Collapse</span>
+            </div>
+          </a>
+        </ul>
+        <!-- List Group END-->
+      </div>
+      <!-- sidebar-container END -->
+      <!-- MAIN -->
+
+      <div class="container">
+        <div class="row" class="container-homepage">
+          <div class="left-card-div">
+            <div class="card leftCard">
+              <canvas id="hitChart"></canvas>
+            </div>
+            <br />
+            <div class="card leftCard">
+              <canvas id="hospitalRegistrationChart"></canvas>
+            </div>
           </div>
           <br />
-          <div class="card leftCard">
-            <canvas id="hospitalRegistrationChart"></canvas>
-          </div>
-        </div>
-        <div class="card rightCard">
-          <div style="display: flex">
-            <img src="../images/hospital-logo.png" id="hospital-logo" alt="" />
-            <!-- Total 34 Hospital registered -->
-            <div>
-              <p class="p1">Total Number of Hospitals registered</p>
-              <p class="p2">Count: 34</p>
+          <div class="card-gap"></div>
+          <div class="card rightCard">
+            <div style="display: flex">
+              <img
+                src="../images/hospital-logo.png"
+                id="hospital-logo"
+                alt=""
+              />
+              <!-- Total 34 Hospital registered -->
+              <div>
+                <p class="p1">Total Number of Hospitals registered</p>
+                <p class="p2">Count: <span id="hospital-count"></span></p>
+              </div>
             </div>
-          </div>
-          <div>
+            <br>
+            <br>
             <div>
-              <button
-                id="hopital-stat-button"
-                onclick="redirectToCheckStatistics()"
-              >
-                <img
-                  src="../images/statistics-logo.png"
-                  id="statistics-logo"
-                  alt=""
-                />&nbsp;&nbsp;&nbsp; See one hospital stats
-              </button>
-            </div>
-            <br />
-            <br />
-            <div>
-              <button
-                id="hospital-registration-button"
-                onclick="redirectToHospitalRegistration()"
-              >
-                <img
-                  src="../images/hospital-logo-1.png"
-                  id="hospital-logo-1"
-                  alt=""
-                />&nbsp;&nbsp;&nbsp; Register a hospital
-              </button>
-            </div>
-            <br />
-            <br />
-            <div>
-              <button
-                id="license-registraion-button"
-                onclick="redirectToLicenseRegistration()"
-              >
-                <img
-                  src="../images/hospital-license.png"
-                  id="statistics-logo"
-                  alt=""
-                />&nbsp;&nbsp;&nbsp; Register Hospital License
-              </button>
-            </div>
-            <br />
-            <br />
-            <div>
-              <button
-                id="add-config-button"
-                onclick="redirectToAddConfig()"
-              >
-                <img
-                  src="../images/add-configuration.png"
-                  id="add-config-logo-1"
-                  alt=""
-                />&nbsp;&nbsp;&nbsp; Add Config
-              </button>
+              <div>
+                <button
+                  class="btn rounded-pill"
+                  class="homepage-button"
+                  id="hopital-stat-button"
+                  onclick="redirectToCheckStatistics()"
+                >
+                  <img
+                    src="../images/statistics-logo.png"
+                    id="statistics-logo"
+                    alt=""
+                  />&nbsp;&nbsp;&nbsp; See one hospital stats
+                </button>
+              </div>
+              <br />
+              <div class="move-right">
+                <button
+                  class="btn rounded-pill"
+                  class="homepage-button"
+                  id="hospital-registration-button"
+                  onclick="redirectToHospitalRegistration()"
+                >
+                  <img
+                    src="../images/hospital-logo-1.png"
+                    id="hospital-logo-1"
+                    alt=""
+                  />
+                  <span>&nbsp; Register a hospital</span>
+                </button>
+              </div>
+              <br />
+              <div>
+                <button
+                  class="btn rounded-pill"
+                  class="homepage-button"
+                  id="license-registraion-button"
+                  onclick="redirectToLicenseRegistration()"
+                >
+                  <img
+                    src="../images/hospital-license.png"
+                    id="hospital-logo-2"
+                    alt=""
+                  />&nbsp;&nbsp;&nbsp; Register Hospital License
+                </button>
+              </div>
+              <br />
+              <div class="move-right">
+                <button
+                  class="btn rounded-pill"
+                  class="homepage-button"
+                  id="add-config-button"
+                  onclick="redirectToAddConfig()"
+                >
+                  <img
+                    src="../images/add-configuration.png"
+                    id="add-config-logo-1"
+                    alt=""
+                  />&nbsp;&nbsp;&nbsp; Add Config
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -200,6 +335,7 @@
     </div>
 
     <!-- footer starts -->
+
     <div>
       <!-- footer section start -->
       <footer id="footer" style="border-top: 1.5px solid black">
@@ -301,9 +437,23 @@
     </div>
     <!-- footer ends  -->
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+      crossorigin="anonymous"
+    ></script>
     <script src="../scripts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../scripts/home_page.js"></script>
+    <script src="../scripts/navbar-slider.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.7/dist/sweetalert2.all.min.js"></script>
   </body>
 </html>
