@@ -1,8 +1,10 @@
 /* Custom styles */
 .container {
-  margin-top: 7%;
-  margin-bottom: 13%;
-}
+    margin-top: 4%;
+    margin-bottom: 13%;
+    width: 70%; /* Full width for container */
+    max-width: none; /* Limiting max width */
+  }
 
 /* Table styles */
 .table {
@@ -29,7 +31,7 @@
   background-color: #e7ecf0;
 }
 
-.nav-link {
+/* .nav-link {
   text-decoration: none;
   padding: 20px 20px;
   display: inline-block;
@@ -41,7 +43,7 @@
 .nav-link:hover {
   opacity: 1;
   cursor: pointer;
-}
+} */
 
 .home-body {
   background-image: url("/inpatient_frontend/images/home-page-background.jpg");
@@ -112,12 +114,20 @@
 /* statistics table styles */
 
 #statisticsTable {
-  /* display: none; */
+    margin-top: 20px;
+    margin-left: 10%;
+    margin-right: 10%;
+    /* width:80%; */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #e7ecf0;
 }
 
 /* Custom table styles */
 .table-container {
-  /* width: 100%; Adjust the width as needed */
+  width: 100%; 
 }
 
 .table {
@@ -131,7 +141,7 @@
 /* Table header styles */
 .table thead th {
   background-color: #e0dde4;
-  color: #7d2ae8;
+  color: #635c6c;
   border-color: #454d55;
 }
 
@@ -167,17 +177,38 @@
   overflow-x: auto;
 }
 
+/* Custom scrollbar */
+.table-wrapper {
+    overflow-x: auto;
+  }
+
+  .table-wrapper::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  
+
 
 /* Navbar styles starts */
 
 .tileHealthClass{
     font-family: 'Times New Roman', 'Georgia', 'Merriweather', 'Playfair Display';
 }
-.navbar-menu{
+/* .navbar-menu{
     font-family: 'Nunito';
 }
-
-/* Navbar styles ends */
 
 
 .navbar {
@@ -185,17 +216,14 @@
   left: 0;
   width: 100%;
   height: 70px;
-  z-index: 1000; /* Ensure it's above other content */
+  z-index: 1000; 
 }
 
 .navbar-nav {
   width: 96%;
-}
+} */
 
-.profileImage {
-  height: 40px;
-  width: 40px;
-}
+
 
 /* loader css */
 
@@ -251,3 +279,88 @@
     font-family: 'Bebas Neue', 'Montserrat', 'Lobster', 'Roboto Condensed';
     font-size: large;
   }
+
+  /* Media Queries for responsiveness */
+@media (max-width: 1500px) {
+    .container {
+      margin-top: 4%;
+      margin-bottom: 13%;
+      width: 70%; /* Adjusting width for smaller screens */
+    }
+    .custom-form {
+        margin-top: 20px;
+        margin-left: 20%;
+        margin-right: 20%;
+        width: 60%;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #e7ecf0;
+      }
+  }
+
+  @media (max-width: 1100px) {
+    .container {
+      margin-top: 4%;
+      margin-bottom: 13%;
+      width: 70%; /* Adjusting width for smaller screens */
+    }
+    .custom-form {
+        margin-top: 20px;
+        margin-left: 15%;
+        margin-right: 15%;
+        width: 70%;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #e7ecf0;
+      }
+  }
+  
+  @media (max-width: 767px) {
+    .container {
+      margin-top: 4%;
+      margin-bottom: 13%;
+      width: 95%; /* Adjusting width for even smaller screens */
+    }
+    .custom-form {
+        margin-top: 20px;
+        margin-left: 15%;
+        margin-right: 15%;
+        width: 70%;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #e7ecf0;
+      }
+  }
+  
+  @media (max-width: 576px) {
+    .container {
+      margin-top: 4%;
+      margin-bottom: 13%;
+      width: 100%; /* Full width for smallest screens */
+    }
+    .custom-form {
+        margin-top: 20px;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 80%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: #e7ecf0;
+    }
+
+    .form-header{
+        font-size:x-large;
+    }
+
+    .field-header{
+        font-size: medium;
+    }
+}

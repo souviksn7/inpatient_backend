@@ -1,99 +1,152 @@
+/* .container {
+    margin-top: 4%;
+    margin-bottom: 13%;
+  }
+   */
 .card {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
+}
+.left-card-div {
+  width: 49%;
+  /* max-width: 575px; */
 }
 .leftCard {
-  width: 700px; 
-  height: 700px;
+  width: 100%;
+  /* max-width: 575px; */
+  height: 325px;
 }
+
 .rightCard {
-  width: 700px; 
-  height: 1400px;
-  background-image: url('/inpatient_frontend/images/card-background.png');
+  width: 49%;
+  /* max-width: 575px; */
+  height: 674px;
+  /* background-image: url("/inpatient_frontend/images/card-background.png"); */
+}
+
+.card-gap {
+  width: 2%;
 }
 
 .container-homepage {
   display: flex;
+  flex-direction: column;
   gap: 20px;
 }
 
-#hospital-logo{
-    width: 100px;
-    height: 100px;
-    margin-top: -20px;
-    margin-left: -20px;
+#hospital-logo,
+#statistics-logo,
+#hospital-logo-1,
+#hospital-logo-2,
+#add-config-logo-1 {
+  width: 50px;
+  height: 50px;
 }
 
-#statistics-logo{
-    width: 80px;
-    height: 80px;
-}
-
-#hospital-logo-1{
-    width: 80px;
-    height: 80px;
-}
-
-#add-config-logo-1{
-    width: 90px;
-    height: 90px;
-}
-
-.p1{
-    font-family: "Lucida Console", "Courier New", monospace;
-}
-.p2{
-    font-family: "Lucida Console", "Courier New", monospace;
-    margin-top: -10px;
-}
-
-#hopital-stat-button{
-    margin-top: 50px;
-    border-radius: 15px;
-    height: 100px;
-    width: 300px;
-    /* background-color: rgb(142, 190, 232); */
-}
-
-#hospital-registration-button{
-    margin-left: 230px;
-    border-radius: 15px;
-    height: 100px;
-    width: 300px;
-    /* background-color: rgb(230, 224, 141); */
-}
-
-#license-registraion-button{
-    border-radius: 15px;
-    height: 100px;
-    width: 300px;
-    /* background-color: rgb(142, 190, 232); */
-}
-
-#add-config-button{
-    margin-left: 230px;
-    border-radius: 15px;
-    height: 100px;
-    width: 300px; 
+.move-right{
+    display: flex;
+    justify-content: right;
 }
 
 #hopital-stat-button,
 #hospital-registration-button,
 #license-registraion-button,
 #add-config-button {
-  transition: transform 0.3s ease; /* Add transition effect */
+  border-radius: 35px;
+  height: 80px;
+  width: 260px;
+  transition: transform 0.3s ease;
+  font-family: 'Times New Roman', serif;
+}
+
+#add-config-button,
+#hospital-registration-button{
+    background-color: rgb(233, 141, 36);
+    color: white;
+    border-color: orange ;
+}
+
+#hopital-stat-button,
+#license-registraion-button{
+    background-color: white;
+    color: rgb(209, 125, 28);
+    border-color: rgb(209, 125, 28);
+}
+
+#license-registraion-button:hover,
+#hopital-stat-button:hover{
+    background-color: rgb(233, 141, 36);
+    color: white;
+}
+
+#hospital-registration-button:hover,
+#add-config-button:hover{
+    background-color: rgb(214, 134, 43);
 }
 
 #hopital-stat-button:hover,
 #hospital-registration-button:hover,
 #license-registraion-button:hover,
 #add-config-button:hover {
-  transform: translateY(-10px); /* Move button 5px up on hover */
+  transform: translateY(-10px);
 }
 
-.homepage-button{
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+@media (max-width: 1420px) {
+  .container-homepage {
+    flex-direction: column;
+  }
+
+  .left-card-div,
+  .rightCard {
+    margin-left: 17%;
+    width: 70%;
+    max-width: none;
+  }
+
+  .rightCard {
+    margin-top: 20px;
+  }
+
+  #hopital-stat-button,
+  #hospital-registration-button,
+  #license-registraion-button,
+  #add-config-button {
+    margin-left: 0;
+  }
 }
+
+@media (max-width: 767.98px) {
+  .container-homepage {
+    flex-direction: column;
+  }
+
+  .left-card-div,
+  .rightCard {
+    margin-left: 17%;
+    width: 70%;
+    max-width: none;
+  }
+
+  #hopital-stat-button,
+  #hospital-registration-button,
+  #license-registraion-button,
+  #add-config-button {
+    margin-left: 0;
+    width: 230px;
+  }
+  #hospital-logo,
+  #statistics-logo,
+  #hospital-logo-1,
+  #add-config-logo-1 {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.p1,
+.p2{
+    font-family: 'Times New Roman', serif;
+}
+
