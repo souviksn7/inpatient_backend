@@ -42,6 +42,7 @@ var {
 } = require("./chopShared");
 
 var carePlans = [];
+var allowcustomhosts;
 
 const _ = require("lodash");
 const jquery = require("jquery")(new JSDOM().window);
@@ -94,9 +95,11 @@ async function buildApp(
   tokenResponse1,
   state1,
   sessionStorage1,
-  config
+  config,
+  allowcustomhosts
 ) {
   try {
+    allowcustomhosts = allowcustomhosts
     csnToFhirIdMap = {};
     csnList = [];
     state;
@@ -253,8 +256,9 @@ async function getChopPreliminaryData() {
       //   }
       // )
     );
-
-  
+   if(allowcustomhosts){
+    // console.log("insisisifjsdfkjsdhfkjhsdkfjhsdkjfhsdkfhksdjhfkjsdhfkjadhfk")
+ 
     if (customHosts[sessionStorage["env"]]) {
       if (typeof getControlTool === "function") {
         deferreds.push.apply(deferreds, getControlTool());
@@ -272,6 +276,8 @@ async function getChopPreliminaryData() {
         deferreds.push(getExternalEncounters(encounters));
       }
     }
+   }
+ 
 
     // return Promise.allSettled(deferreds);
     // Execute all deferreds concurrently
@@ -317,13 +323,15 @@ async function getChopRemainingData() {
   // chopFilterCarePlans(encMap);
   // carePlans = getCarePlans();
   // console.log("i changed it in my appjs",chartConfig.chart.dates)
-
+if(allowcustomhosts){
   if (customHosts[sessionStorage["env"]]) {
     if (typeof getEncDat === "function" && csnList.length > 0) {
       deferreds.push(getEncDat());
     }
   }
 
+}
+ 
   await Promise.allSettled(deferreds);
   return deferreds;
 }
