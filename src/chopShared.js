@@ -11,7 +11,12 @@ async function setState(v){
 
 // Set token response variable
 var tokenResponse;
+var sessionStorage
 
+
+async function setSessionStorage(v){
+    sessionStorage = v
+}
 // Method to set token response variable
 async function setTokenResponse(v) {
     // console.log("in shared js",v)
@@ -37,5 +42,7 @@ module.exports = {
     today,
     getTokenResponse: () => tokenResponse,
     setState,
-    getState: () => state
+    getState: () => state,
+    setSessionStorage,
+    getSessionStorage:()=>sessionStorage
 };

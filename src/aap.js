@@ -23,16 +23,21 @@ var {
     today,
     getTokenResponse,
     setState,
-    getState
+    getState,
+    
+    getSessionStorage
     
   } = require('./chopShared')
 let tokenResponse;
 let lookbackDays;
-let csnToFhirIdMap
-function getAsthmaActionPlan() {
+let csnToFhirIdMap;
+var sessionStorage 
+async function getAsthmaActionPlan() {
     tokenResponse = getTokenResponse()
+    // console.log(chartConfig.chart.dates)
+    sessionStorage = getSessionStorage()
      lookbackDays = Math.ceil((today.getTime() - chartConfig.chart.dates.contextStart.getTime()) / (1000 * 3600 * 24));
-    return search(customHosts[sessionStorage["env"]] + "CHOP/2015/CHOP/Clinical/GetSmartDataElement", {
+    return await search(customHosts[sessionStorage["env"]] + "CHOP/2015/CHOP/Clinical/GetSmartDataElement", {
         patientID: tokenResponse.eptId,
         csn: tokenResponse.csn,
         lookback: lookbackDays,
@@ -53,9 +58,11 @@ function getAsthmaActionPlan() {
     });
 }
 
-function getAsthmaCarePlan() {
+async function getAsthmaCarePlan() {
+    tokenResponse = getTokenResponse()
+    sessionStorage = getSessionStorage()
     lookbackDays = Math.ceil((today.getTime() - chartConfig.chart.dates.contextStart.getTime()) / (1000 * 3600 * 24));
-    return search(customHosts[sessionStorage["env"]] + "CHOP/2015/CHOP/Clinical/GetSmartDataElement", {
+    return await search(customHosts[sessionStorage["env"]] + "CHOP/2015/CHOP/Clinical/GetSmartDataElement", {
         patientID: tokenResponse.eptId,
         csn: tokenResponse.csn,
         lookback: lookbackDays,

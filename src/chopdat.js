@@ -13,7 +13,8 @@ var {
     today,
     getTokenResponse,
     setState,
-    getState
+    getState,
+    getSessionStorage
     
   } = require('./chopShared')
 
@@ -21,9 +22,13 @@ var {
 var csnList;
 
 var csnToDatMap;
+var tokenResponse
+var sessionStorage
 
 function getEncDat() {
     csnList = getcsnList()
+    tokenResponse = getTokenResponse()
+    sessionStorage = getSessionStorage()
     return search(customHosts[sessionStorage["env"]] + "CHOP/2015/CHOP/Clinical/Csn2Dat", JSON.stringify({
         csn: csnList
     }), "POST", {"Content-Type": "application/json"}).then(function(map, state, xhr) {
