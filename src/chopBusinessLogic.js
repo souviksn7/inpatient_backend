@@ -4,6 +4,15 @@ const { JSDOM } = require("jsdom");
 const fs = require("fs");
 const axios = require("axios");
 const path = require("path");
+const visitData = require("./encdata");
+const medsdata = require("./medsdata");
+const {
+  systemsteriod,
+  Controller,
+  biologic,
+} = require("./medicationrequestdata");
+const hospiatalProblem = require("./hospitalproblem");
+const medadmin = require("./medadmindata");
 
 let hospitalConfig;
 const customHosts = require("./chopcustomHosts");
@@ -39,6 +48,8 @@ var {
   getTokenResponse,
   setState,
   getState,
+  setSessionStorage,
+  getSessionStorage,
 } = require("./chopShared");
 
 var carePlans = [];
@@ -46,17 +57,16 @@ var allowcustomhosts;
 
 const _ = require("lodash");
 const jquery = require("jquery")(new JSDOM().window);
-const chartConfig = require("./healthChartConfig");
+const chartConfig1 = require("./healthChartConfig");
+var chartConfig;
 const { each } = require("jquery");
-var rowMap = (chartConfig.rowMap = {});
-chartConfig.rows.forEach(function (v, i) {
-  chartConfig.rowMap[v.name] = i;
-});
+var rowMap;
 var counterLookback;
 // var today = new Date();
 var csnToFhirIdMap = {};
 var csnList = [];
 var state;
+var csnToDatMap
 
 var encounters = [];
 var medPlot = [];
@@ -89,7 +99,7 @@ function dateMath(offset, date) {
   date = date || new Date();
   return d3.timeSecond.offset(date, offset);
 }
-
+var chartConfigrows = JSON.parse(JSON.stringify(chartConfig1));
 async function buildApp(
   hospital,
   tokenResponse1,
@@ -98,8 +108,19 @@ async function buildApp(
   config,
   allowcustomhosts
 ) {
+  // console.log(tokenResponse1);
   try {
-    allowcustomhosts = allowcustomhosts
+    
+    // console.log(chartConfigrows.rows)
+    chartConfig = chartConfig1
+    chartConfig.rows = JSON.parse(JSON.stringify(chartConfigrows.rows));
+    rowMap = chartConfig.rowMap = {};
+    chartConfig.rows.forEach(function (v, i) {
+      chartConfig.rowMap[v.name] = i;
+    });
+    carePlans = [];
+    setCarePlans(carePlans)
+    allowcustomhosts = allowcustomhosts;
     csnToFhirIdMap = {};
     csnList = [];
     state;
@@ -131,11 +152,12 @@ async function buildApp(
 
     await setState(state1);
     state = getState;
-    sessionStorage = sessionStorage1;
-    const requestTime = Date.now(); 
+    await setSessionStorage(sessionStorage1)
+    sessionStorage = getSessionStorage();
+    // console.log("session storage",sessionStorage["env"])
+    const requestTime = Date.now();
     await import("d3")
       .then((d3) => {
-       
         function dateMath(offset, date) {
           date = date || new Date();
           return d3.timeSecond.offset(date, offset);
@@ -149,23 +171,20 @@ async function buildApp(
         };
         chartConfig.chart.dates = dates;
         counterLookback = chartConfig.chart.dates.line;
-        
       })
       .catch((error) => {
-       
         console.error("Error loading d3:", error);
       });
 
-    
     switch (hospital) {
       case "CHOP":
         const result = await getChopPreliminaryData();
-       
+
         const result2 = await getChopRemainingData();
         const result3 = await chopProcess();
         break;
       default:
-        console.log("there is no hospital code for this");
+      // console.log("there is no hospital code for this");
     }
 
     const response = {
@@ -173,12 +192,11 @@ async function buildApp(
       encounters,
       encMap,
       medPlot,
+      carePlans,
     };
 
-    console.log("businessLogic Response");
+    // console.log(response);
     return response;
-
-    
   } catch (error) {
     console.log("Error:", error);
   }
@@ -186,109 +204,176 @@ async function buildApp(
 
 async function getChopPreliminaryData() {
   try {
+    
+
     let deferreds = [];
     deferreds.push.apply(deferreds, await getChopEHRMedicationsRequest());
-   
+
+    //mock data
     deferreds.push.apply(
       deferreds,
-      await splitFhirRequest(
-        3,
-        today,
-        chopFhirMedCallback,
-        "FHIR/R4/MedicationRequest",
-        {
-          patient: tokenResponse.patient,
-        }
-      )
+      await chopFhirMedCallback(medsdata, "random", { status: 200 })
     );
 
- 
-    try {
-      deferreds.push(
-        await search("FHIR/R4/List", {
-          code: "hospital-problems",
-          patient: tokenResponse.patient,
-        }).then(function (bundle, state, xhr) {
-          try {
-            
-            if (!bundle.entry) {
-              return;
-            }
-            bundle.entry.forEach(function (list) {
-              if (!list.resource || !list.resource.entry) {
-                return;
-              }
+    // deferreds.push.apply(
+    //   deferreds,
+    //   await splitFhirRequest(
+    //     3,
+    //     today,
+    //     chopFhirMedCallback,
+    //     "FHIR/R4/MedicationRequest",
+    //     {
+    //       patient: tokenResponse.patient,
+    //     }
+    //   )
+    // );
 
-           
-              var encId = list.resource.encounter.reference.replace(
-                "Encounter/",
-                ""
-              );
+    //mock data
+    hospiatalProblem.entry.forEach(function (list) {
+      if (!list.resource || !list.resource.entry) {
+        return;
+      }
 
-              list.resource.entry.forEach(function (problem) {
-                if (!hospitalProblemMap[encId]) {
-                  hospitalProblemMap[encId] = [];
-                }
-                hospitalProblemMap[encId].push(problem.item.reference);
-              });
-            });
-          } catch (error) {
-      
-            console.log(error.stack, "error");
-          }
-        })
-      );
-    } catch (error) {
-      console.log("hospiatal problem error ", error);
-    }
-    
+      var encId = list.resource.encounter.reference.replace("Encounter/", "");
+
+      list.resource.entry.forEach(function (problem) {
+        if (!hospitalProblemMap[encId]) {
+          hospitalProblemMap[encId] = [];
+        }
+        hospitalProblemMap[encId].push(problem.item.reference);
+      });
+    });
+
+
+
+    // try {
+    //   deferreds.push(
+    //     await search("FHIR/R4/List", {
+    //       code: "hospital-problems",
+    //       patient: tokenResponse.patient,
+    //     }).then(function (bundle, state, xhr) {
+    //       try {
+    //         //  console.log("hospital problem Map", bundle)
+    //         if (!bundle.entry) {
+    //           return;
+    //         }
+    //         bundle.entry.forEach(function (list) {
+    //           if (!list.resource || !list.resource.entry) {
+    //             return;
+    //           }
+
+    //           var encId = list.resource.encounter.reference.replace(
+    //             "Encounter/",
+    //             ""
+    //           );
+
+    //           list.resource.entry.forEach(function (problem) {
+    //             if (!hospitalProblemMap[encId]) {
+    //               hospitalProblemMap[encId] = [];
+    //             }
+    //             hospitalProblemMap[encId].push(problem.item.reference);
+    //           });
+    //         });
+    //       } catch (error) {
+
+    //         console.log(error.stack, "error");
+    //       }
+    //     })
+    //   );
+    // } catch (error) {
+    //   console.log("hospiatal problem error ", error);
+    // }
+
+    //mock data
     deferreds.push.apply(
       deferreds,
       await chopEncounterCallback(visitData, "random", { status: 200 })
-      // await splitFhirRequest(
-      //   3,
-      //   today,
-      //   chopEncounterCallback,
-      //   "FHIR/R4/Encounter",
-      //   {
-      //     patient: tokenResponse.patient,
-      //     _include: "Encounter:Location",
-      //   }
-      // )
     );
-   if(allowcustomhosts){
-    // console.log("insisisifjsdfkjsdhfkjhsdkfjhsdkjfhsdkfhksdjhfkjsdhfkjadhfk")
- 
-    if (customHosts[sessionStorage["env"]]) {
-      if (typeof getControlTool === "function") {
-        deferreds.push.apply(deferreds, getControlTool());
-      }
 
-      if (typeof getAsthmaActionPlan === "function") {
-        deferreds.push(getAsthmaActionPlan());
-      }
 
-      if (typeof getAsthmaCarePlan === "function") {
-        deferreds.push(getAsthmaCarePlan());
-      }
+    // deferreds.push.apply(
+    //   deferreds,
+    //   await splitFhirRequest(
+    //     3,
+    //     today,
+    //     chopEncounterCallback,
+    //     "FHIR/R4/Encounter",
+    //     {
+    //       patient: tokenResponse.patient,
+    //       _include: "Encounter:Location",
+    //     }
+    //   )
+    // );
+   
+    // try{
+    //   deferreds.push.apply(await getAsthmaActionPlan());
+    // }catch(error){
+    //   console.log(error)
+    // }
+    // try{
+    //   deferreds.push(await getAsthmaCarePlan())
+    // }catch(error){
+      
+    // }
+    
+    // try{
+    //   deferreds.push(getExternalEncounters(encounters));
+    // }catch(error){
+    //   console.log(error)
+    // }
 
-      if (typeof getExternalEncounters === "function") {
-        deferreds.push(getExternalEncounters(encounters));
+    if (allowcustomhosts) {
+     
+
+      if (customHosts[sessionStorage["env"]]) {
+        if (typeof getControlTool === "function") {
+          try{
+            deferreds.push.apply(deferreds, getControlTool());
+          }catch(error){
+            console.log(error)
+          }
+          
+        }
+
+        if (typeof getAsthmaActionPlan === "function") {
+          try{
+            deferreds.push(await getAsthmaActionPlan());
+          }catch(error){
+            console.log(error)
+          }
+          
+        
+        }
+
+        if (typeof getAsthmaCarePlan === "function") {
+          try{
+            deferreds.push(await getAsthmaCarePlan());
+          }catch(error){
+            console.log(error)
+          }
+          
+         
+        }
+
+        if (typeof getExternalEncounters === "function") {
+          try{
+            deferreds.push(getExternalEncounters(encounters));
+          }catch(error){
+            console.log(error)
+          }
+          
+          
+        }
       }
     }
-   }
- 
 
-    // return Promise.allSettled(deferreds);
-    // Execute all deferreds concurrently
-    console.log(" i am in getprelimanary data");
-    // console.log(deferreds)
+
     await Promise.allSettled(deferreds);
     return deferreds;
   } catch (error) {
-    console.log("this is prelimanry error");
+   
     console.error("Error:", error); // Log the error
-    throw error; // Throw the error for handling elsewhere
+    
   }
 }
 
@@ -296,7 +381,7 @@ async function getChopRemainingData() {
   // console.log("in getRemaining Data, before filterLocation, encounters array ", encounters);
   // console.log("encMap before filterLocation ", encMap);
   var deferreds = [];
-  console.log("hello i am in get remaining data");
+  // console.log("hello i am in get remaining data");
   // Filter locations to enable filtering during encounter chopProcessing
   await chopFilterLocations();
 
@@ -306,6 +391,8 @@ async function getChopRemainingData() {
   // // and remove those that don't meet initial criteria. Will still need to filter based on dx and meds.
   const result = await chopPreFilterEncounters(deferreds);
 
+
+
   // // // Obtain admin history for meds classified as "inpatient"
   // // // This includes acute encounters (e.g. IP and ED) as well
   // // // as clinic administered medications.
@@ -314,24 +401,30 @@ async function getChopRemainingData() {
   if (medAdminList.length > 0) {
     deferreds.push(await getMedAdmin());
   }
-
+  // console.log("medadkjdslkjf", medAdminMap)
   // // // Attach encounter ID to meds in medIdMap
-  // chopAddMedContext();
+  chopAddMedContext();
 
   // // // Filter on care plans;
   // setCarePlans(carePlans);
-  // chopFilterCarePlans(encMap);
-  // carePlans = getCarePlans();
+  chopFilterCarePlans(encMap);
+  carePlans = getCarePlans();
   // console.log("i changed it in my appjs",chartConfig.chart.dates)
-if(allowcustomhosts){
-  if (customHosts[sessionStorage["env"]]) {
-    if (typeof getEncDat === "function" && csnList.length > 0) {
-      deferreds.push(getEncDat());
+
+  if (allowcustomhosts) {
+    if (customHosts[sessionStorage["env"]]) {
+      if (typeof getEncDat === "function" && csnList.length > 0) {
+        try{
+          deferreds.push(await getEncDat());
+          csnToDatMap = getcsnToDatMap()
+        }
+        catch(error){
+          console.log(error)
+        }
+      }
     }
   }
 
-}
- 
   await Promise.allSettled(deferreds);
   return deferreds;
 }
@@ -355,16 +448,17 @@ async function chopProcess() {
 
     // Waiting until remaining data is back to link
     // medications to encounters;
-    // chopLinkMedAdmin();
+    chopLinkMedAdmin();
 
     // // Build medication visualization object to pass to visualization library
-    // chopBuildMedVisObj();
+    chopBuildMedVisObj();
 
     // Post-chopProcess encounters after medications have been linked
     chopPostFilterEncounters();
 
     // // Filter external encounters
-    // filterExternalEncounters();
+    filterExternalEncounters();
+    // console.log(chartConfig.rows.dates)
 
     // Build visualization
     return;
@@ -405,7 +499,7 @@ async function splitFhirRequest(
   }
 }
 
-function chopFhirMedCallback(meds, state, xhr) {
+async function chopFhirMedCallback(meds, state, xhr) {
   try {
     if (xhr.status != 200) {
       // console.log("fhirmeds")
@@ -428,6 +522,7 @@ function chopFhirMedCallback(meds, state, xhr) {
     // returned this medication.
 
     fhirMeds.push.apply(fhirMeds, meds.entry);
+    // console.log("fhirmeds", fhirMeds)
   } catch (error) {
     // chart.failure = true;
     console.log(error);
@@ -484,45 +579,54 @@ async function getChopEHRMedicationsRequest() {
         row: "Systemic Steroid",
       },
     ];
-    await Promise.allSettled(
-      grouper.map(async function (grouper) {
-        try {
-          deferreds.push(
-            await search(
-              "epic/2017/Clinical/Utility/GetMedications/GetMedications",
-              JSON.stringify({
-                PatientID: tokenResponse.patient,
-                PatientIDType: "FHIR",
-                GrouperID: grouper.id,
-                NumberDaysToIncludeDiscontinuedAndEndedOrders: 731,
-                ProfileView: "3",
-              }),
-              "POST",
-              {
-                "Content-Type": "application/json",
-              }
-            ).then(function (meds, state, xhr) {
-              try {
-                // TODO - Need to check for "error" responses from EHR when there aren't any results to return
-                if (!meds.MedicationOrders) {
-                  meds.MedicationOrders = [];
-                }
-                console.log("hiii I am in Grouper part");
-                // Pre-filter immediately to prep for encounter linking.
-                chopPreFilterMedications(meds.MedicationOrders, grouper.row);
-              } catch (error) {
-                // chart.failure = true;
-                console.log(error.stack, "error");
-              }
-            })
-          );
 
-          return deferreds;
-        } catch (error) {
-          console.log("error in groper", error);
-        }
-      })
+    //mock data
+    chopPreFilterMedications(
+      systemsteriod.MedicationOrders,
+      "Systemic Steroid"
     );
+    chopPreFilterMedications(biologic.MedicationOrders, "Biologic");
+    chopPreFilterMedications(Controller.MedicationOrders, "Controller");
+
+
+    // await Promise.allSettled(
+    //   grouper.map(async function (grouper) {
+    //     try {
+    //       deferreds.push(
+    //         await search(
+    //           "epic/2017/Clinical/Utility/GetMedications/GetMedications",
+    //           JSON.stringify({
+    //             PatientID: tokenResponse.patient,
+    //             PatientIDType: "FHIR",
+    //             GrouperID: grouper.id,
+    //             NumberDaysToIncludeDiscontinuedAndEndedOrders: 731,
+    //             ProfileView: "3",
+    //           }),
+    //           "POST",
+    //           {
+    //             "Content-Type": "application/json",
+    //           }
+    //         ).then(function (meds, state, xhr) {
+    //           try {
+    //             // TODO - Need to check for "error" responses from EHR when there aren't any results to return
+    //             if (!meds.MedicationOrders) {
+    //               meds.MedicationOrders = [];
+    //             }
+    //             // Pre-filter immediately to prep for encounter linking.
+    //             chopPreFilterMedications(meds.MedicationOrders, grouper.row);
+    //           } catch (error) {
+    //             // chart.failure = true;
+    //             console.log(error.stack, "error");
+    //           }
+    //         })
+    //       );
+
+    //       return deferreds;
+    //     } catch (error) {
+    //       console.log("error in groper", error);
+    //     }
+    //   })
+    // );
   } catch (error) {
     console.log("Grouper Error", error);
   }
@@ -615,7 +719,7 @@ function chopPreFilterMedications(medications, row) {
 }
 
 function chopAddMedContext() {
-  console.log("fhirMeds ", hospitalConfig.medContextIndex);
+  // console.log("fhirMeds ", hospitalConfig.medContextIndex);
   fhirMeds.forEach(function (v) {
     var encId;
     if (v.resource.encounter && v.resource.encounter.reference) {
@@ -646,6 +750,8 @@ function chopAddMedContext() {
     ) {
       encMap[encId]._albuterol = true;
     }
+
+    // console.log(encMap[encId])
   });
 }
 
@@ -744,7 +850,9 @@ function chopBuildMedVisObj() {
 
       // Check if it falls within the counter range
       if (admin.date > counterLookback) {
+      
         chartConfig.rows[rowMap[medIdMap[ordId].row]].count++;
+        // console.log(chartConfig.rows[rowMap[medIdMap[ordId].row]])
       }
 
       // Add the compressed data point to the medication array
@@ -900,6 +1008,7 @@ async function chopFilterLocations() {
 
 async function chopPreFilterEncounters(deferred) {
   try {
+    // console.log("sfjsdlfsdkljfdsljflk",encounters)
     const filterEncounters = await Promise.allSettled(
       encounters.map(async function (resource) {
         // Check status of encounter. Encounters with unknown status can be discarded.
@@ -912,7 +1021,7 @@ async function chopPreFilterEncounters(deferred) {
         // Convert period to start and end date
         var start = (resource.start = dateFromString(resource.period.start));
         // console.log(new Date())
-        console.log(start);
+        // console.log(start);
         var startStr = stringFromDate(start);
         var end = (resource.end = dateFromString(resource.period.end));
         var endStr = stringFromDate(end);
@@ -978,6 +1087,7 @@ async function chopPreFilterEncounters(deferred) {
         // Extract encounter type and class (if they exist)
         resource.type.forEach(function (type) {
           type.coding.forEach(function (v) {
+            // console.log(v)
             if (
               v.system.indexOf(hospitalConfig.preFilterEncounterTypeIndex) >= 0
             ) {
@@ -986,12 +1096,13 @@ async function chopPreFilterEncounters(deferred) {
             } else if (
               v.system.indexOf(hospitalConfig.preFilterEncounterClassIndex) >= 0
             ) {
+              // console.log(resource)
               resource.adtClass = +v.code;
               resource.adtClassName = v.display;
             }
           });
         });
-
+        // console.log("resource", resource)
         // encDateMap is used to link clinic administered meds to outpatient encounters
         // so restricting to office visits
         if (resource.contactType == 101) {
@@ -1035,6 +1146,7 @@ async function chopPreFilterEncounters(deferred) {
         ) {
           return false;
         }
+        // console.log("resorce",resource)
         // Set visualization group to the encounter ID and populate the hover details
         // with basic information about the encounter. Hover details will be expanded
         // on within each encounter type.
@@ -1050,49 +1162,56 @@ async function chopPreFilterEncounters(deferred) {
         //   1 - Inpatient
         //   5 - Observation
         if ([1, 5].indexOf(resource.adtClass) >= 0) {
+          // console.log("helloooooo")
+          // console.log("resorce",resource)
           // Retrieve Condition resource from the reference provided as part
           // of the "list" resource for hospital problems, if it exists
           try {
+            // console.log("resorce",resource)
             if (hospitalProblemMap[resource.id]) {
               hospitalProblemMap[resource.id].forEach(async function (
                 reference
               ) {
-                deferred.push(
-                  await search("FHIR/R4/" + reference).then(function (
-                    condition,
-                    state,
-                    xhr
-                  ) {
-                    try {
-                      if (encMap[resource.id]._validDx) {
-                        return false;
+                try{
+                  deferred.push(
+                    await search("FHIR/R4/" + reference).then(function (
+                      condition,
+                      state,
+                      xhr
+                    ) {
+                      try {
+                        if (encMap[resource.id]._validDx) {
+                          return false;
+                        }
+                        // TODO - Future state could consider capturing the data
+                        // and chopProcessing later
+                        if (condition.code) {
+                          condition.code.coding.forEach(function (dx) {
+                            if (asthmaDxRegex.test(dx.code)) {
+                              encMap[resource.id]._validDx = true;
+                            }
+                            if (dx.text && croupDxRegex.test(dx.text)) {
+                              encMap[resource.id]._croupDx = true;
+                            }
+                          });
+                        }
+                      } catch (error) {
+                        chart.failure = true;
+                        log(error.stack, "error");
                       }
-                      // TODO - Future state could consider capturing the data
-                      // and chopProcessing later
-                      if (condition.code) {
-                        condition.code.coding.forEach(function (dx) {
-                          if (asthmaDxRegex.test(dx.code)) {
-                            encMap[resource.id]._validDx = true;
-                          }
-                          if (dx.text && croupDxRegex.test(dx.text)) {
-                            encMap[resource.id]._croupDx = true;
-                          }
-                        });
-                      }
-                    } catch (error) {
-                      chart.failure = true;
-                      log(error.stack, "error");
-                    }
-                  })
-                );
+                    })
+                  );
+                }catch(error){
+                  console.log(error)
+                }
+               
               });
             }
           } catch (error) {
             console.log(error);
           }
 
-          // // Check for an encounter diagnosis if it exists to also
-          // // determine if this is an encounter we should plot
+         
           try {
             deferred.push(
               await search("FHIR/R4/Condition", {
@@ -1164,6 +1283,7 @@ async function chopPreFilterEncounters(deferred) {
           // Check for "emergency" visit
         } else if (resource.adtClass == 3) {
           // Check if this is an encounter we should plot
+
           deferred = await getEncDiagnosis(resource, deferred);
 
           // console.log("this should be print before send of result")
@@ -1231,7 +1351,7 @@ async function chopPreFilterEncounters(deferred) {
             return false;
           } else {
             resource = isValidLocation(resource)[1];
-            console.log(resource);
+            // console.log("sfsdlkjfklsdjfl",resource);
           }
 
           // console.log("numberof resource",resource)
@@ -1246,7 +1366,7 @@ async function chopPreFilterEncounters(deferred) {
               chartConfig.rows[rowMap[resource.row]].legend.alt.shape;
             // console.Console.log("resource", resource)
           } else if (resource.contactType != 101) {
-            console.log(resource, "sjdhfdjkshfkjdshfkjdsh");
+            // console.log(resource, "sjdhfdjkshfkjdshfkjdsh");
             return false;
           }
 
@@ -1257,6 +1377,7 @@ async function chopPreFilterEncounters(deferred) {
           });
 
           // Check for valid encounter diagnosis
+          // console.log(resource.id)
           await getEncDiagnosis(resource, deferred);
         }
 
@@ -1283,6 +1404,8 @@ async function chopPreFilterEncounters(deferred) {
     encounters = encounters.filter(
       (_, i) => filterEncounters[i].value === true
     );
+
+    // console.log("ensdfskdfl",encounters)
 
     return deferred;
   } catch (error) {
@@ -1316,7 +1439,7 @@ function isValidLocation(resource) {
   if (locationMap[resource.deptId]) {
     switch (locationMap[resource.deptId].code) {
       case "3":
-        console.log("allegry");
+        // console.log("allegry");
         encMap[resource.id].row = resource.row = "Allergy";
         return [true, resource];
       case "82":
@@ -1339,7 +1462,7 @@ function chopPostFilterEncounters() {
   // Loop over encounters after additional context has been added
   // to determine which encounters to include
   encounters = encounters.filter(function (resource) {
-    console.log("post filter ", resource);
+    // console.log("post filter ", resource);
     if (!encMap[resource.id]) {
       return false;
     }
@@ -1362,6 +1485,7 @@ function chopPostFilterEncounters() {
       // followedBy(resource.row);
       // Add to the global counter
       chartConfig.rows[rowMap[resource.row]].count++;
+      // console.log(chartConfig.rows)
       // TODO - Need to define ICU visits
       if (resource._icu || resource._uc) {
         chartConfig.rows[rowMap[resource.row]].legend.count++;
@@ -1371,37 +1495,1078 @@ function chopPostFilterEncounters() {
   });
 }
 
-async function getEncDiagnosis(resource, deferred) {
+const getEncDiagnosis = async (resource, deferred) => {
   try {
-    deferred.push(
-      await search("FHIR/R4/Condition", {
-        patient: tokenResponse.patient,
-        category: "encounter-diagnosis",
-        encounter: resource.id,
-      }).then(function (encDx, state, xhr) {
-        try {
-          encDx.entry.forEach(function (entry) {
-            if (encMap[resource.id]._validDx) {
-              return;
-            }
-            if (entry.resource.code) {
-              encMap[resource.id]._validDx = checkDx(
-                entry.resource.code.coding
-              );
-            }
-          });
+    // console.log(resource.id)
 
-          return deferred;
-        } catch (error) {
-          // chart.failure = true;
-          console.log(error, "error");
-        }
-      })
-    );
+    //mock data
+    let encDx = {};
+    if (resource.id == "euLDMs1yHH3wEjXEmtmbv0A3") {
+      // console.log("helllooo")
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=euLDMs1yHH3wEjXEmtmbv0A3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiSE.QmKBtynzEhr01JHN7KaZY5xZCOyQh2eH-if4b7iVCb.RmmJoFsDfZg.DhTEvBg3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiSE.QmKBtynzEhr01JHN7KaZY5xZCOyQh2eH-if4b7iVCb.RmmJoFsDfZg.DhTEvBg3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiSE.QmKBtynzEhr01JHN7KaZY5xZCOyQh2eH-if4b7iVCb.RmmJoFsDfZg.DhTEvBg3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "427679007",
+                    display: "Mild intermittent asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.91",
+                    display: "Unspecified asthma, with status asthmaticus",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.22",
+                    display: "Mild intermittent asthma with status asthmaticus",
+                  },
+                ],
+                text: "Mild intermittent asthma with status asthmaticus",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/euLDMs1yHH3wEjXEmtmbv0A3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133188",
+                },
+                display: "Emergency",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "eOEet6qLLSEijc1iC5y8A4A3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 2,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=eOEet6qLLSEijc1iC5y8A4A3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdIm.BbyZxEQUbb9V-EDbHIIBW0DwcyMEkjPCijbEV51IpA3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdIm.BbyZxEQUbb9V-EDbHIIBW0DwcyMEkjPCijbEV51IpA3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdIm.BbyZxEQUbb9V-EDbHIIBW0DwcyMEkjPCijbEV51IpA3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "427679007",
+                    display: "Mild intermittent asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.92",
+                    display: "Unspecified asthma, with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Mild intermittent asthma with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eOEet6qLLSEijc1iC5y8A4A3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133184",
+                },
+                display: "Emergency",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdImMsqlwcxMQqhi1iBfSPeegZX6b3d5QEhdy4Ha4EfgP1A3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdImMsqlwcxMQqhi1iBfSPeegZX6b3d5QEhdy4Ha4EfgP1A3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiXnYBm2C8vgZQAAdU3FSdImMsqlwcxMQqhi1iBfSPeegZX6b3d5QEhdy4Ha4EfgP1A3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "427679007",
+                    display: "Mild intermittent asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.91",
+                    display: "Unspecified asthma, with status asthmaticus",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.22",
+                    display: "Mild intermittent asthma with status asthmaticus",
+                  },
+                ],
+                text: "Mild intermittent asthma with status asthmaticus",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eOEet6qLLSEijc1iC5y8A4A3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133184",
+                },
+                display: "Emergency",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "e4LaS4sGigpkTxY6ilo3gEQ3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=e4LaS4sGigpkTxY6ilo3gEQ3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWid1qTVecyCfoiNu-L6N7gi9d4O4WVV7QQcAJfNzEA4wBItXpVS1a7mITq.4SPqnlJg3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWid1qTVecyCfoiNu-L6N7gi9d4O4WVV7QQcAJfNzEA4wBItXpVS1a7mITq.4SPqnlJg3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWid1qTVecyCfoiNu-L6N7gi9d4O4WVV7QQcAJfNzEA4wBItXpVS1a7mITq.4SPqnlJg3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/e4LaS4sGigpkTxY6ilo3gEQ3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133205",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "eJax.3V2SXJDD.zDnyfzy5g3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=eJax.3V2SXJDD.zDnyfzy5g3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiRAVuynt4vtwMAIMXPRd8tEPKtZPErCWMZx0GvLLQGXUC.DoRBco-2ivO88RonRVeA3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiRAVuynt4vtwMAIMXPRd8tEPKtZPErCWMZx0GvLLQGXUC.DoRBco-2ivO88RonRVeA3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiRAVuynt4vtwMAIMXPRd8tEPKtZPErCWMZx0GvLLQGXUC.DoRBco-2ivO88RonRVeA3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "427679007",
+                    display: "Mild intermittent asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.90",
+                    display: "Unspecified asthma(493.90)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.20",
+                    display: "Mild intermittent asthma, uncomplicated",
+                  },
+                ],
+                text: "Mild intermittent asthma, unspecified whether complicated",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eJax.3V2SXJDD.zDnyfzy5g3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133191",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "eVF-DJJeSAYYhQG4l7OaZ2A3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 2,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=eVF-DJJeSAYYhQG4l7OaZ2A3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ1bqqA79qJdhZcpNhm5JuN4RV6aAIIT39nUstz7DCIF0Q3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ1bqqA79qJdhZcpNhm5JuN4RV6aAIIT39nUstz7DCIF0Q3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ1bqqA79qJdhZcpNhm5JuN4RV6aAIIT39nUstz7DCIF0Q3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "707512002",
+                    display:
+                      "Uncomplicated moderate persistent asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.90",
+                    display: "Unspecified asthma(493.90)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.40",
+                    display: "Moderate persistent asthma, uncomplicated",
+                  },
+                ],
+                text: "Moderate persistent asthma without complication",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eVF-DJJeSAYYhQG4l7OaZ2A3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133198",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ066d2jutuUcMOnxCntPmMyv-f9ZmTIs2LNTrM2FGDGfw3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ066d2jutuUcMOnxCntPmMyv-f9ZmTIs2LNTrM2FGDGfw3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiTRmtflEyDKXYHfJ0UBxxZ066d2jutuUcMOnxCntPmMyv-f9ZmTIs2LNTrM2FGDGfw3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eVF-DJJeSAYYhQG4l7OaZ2A3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133198",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "ec51kmFLswd43eF3tVxl5iA3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=ec51kmFLswd43eF3tVxl5iA3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiWCs2LmbfvBqRcPDiKXUDCSol16Ds-ZuMwXOPVYkYKklEQu.a9eEo0aPzQ3pXKnsXQ3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiWCs2LmbfvBqRcPDiKXUDCSol16Ds-ZuMwXOPVYkYKklEQu.a9eEo0aPzQ3pXKnsXQ3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiWCs2LmbfvBqRcPDiKXUDCSol16Ds-ZuMwXOPVYkYKklEQu.a9eEo0aPzQ3pXKnsXQ3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/ec51kmFLswd43eF3tVxl5iA3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133203",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "elUgpw0Sa9VqWJJb6n2BJPA3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=elUgpw0Sa9VqWJJb6n2BJPA3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXauPOxH0Mmu8390oLkTsUSSqEFi-xZ5TJE5EtfGI9GOEOfvWKMYBcRl750JyyQeMw3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiXauPOxH0Mmu8390oLkTsUSSqEFi-xZ5TJE5EtfGI9GOEOfvWKMYBcRl750JyyQeMw3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiXauPOxH0Mmu8390oLkTsUSSqEFi-xZ5TJE5EtfGI9GOEOfvWKMYBcRl750JyyQeMw3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/elUgpw0Sa9VqWJJb6n2BJPA3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133194",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "eFzbodhqV8RJ4yAzfRh7UyQ3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=eFzbodhqV8RJ4yAzfRh7UyQ3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiR57bd1gmT0CpUKOSQ86BWtSpCiMluKT0QYGR49vOEY2kZKBduhFV5enXjpNeMd1gQ3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWiR57bd1gmT0CpUKOSQ86BWtSpCiMluKT0QYGR49vOEY2kZKBduhFV5enXjpNeMd1gQ3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWiR57bd1gmT0CpUKOSQ86BWtSpCiMluKT0QYGR49vOEY2kZKBduhFV5enXjpNeMd1gQ3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eFzbodhqV8RJ4yAzfRh7UyQ3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133208",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "eL0PyrCZ-4638FHl.IRBvRw3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 1,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=eL0PyrCZ-4638FHl.IRBvRw3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            link: [
+              {
+                relation: "self",
+                url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWieG4shxirIe2Q17k25jvB6sAXLtJ-wHpwiKoYPT.rMs8tfteo2Mq4Na519a.LDpX-A3",
+              },
+            ],
+            fullUrl:
+              "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition/eCecTpP0.WVKMrPm76KiWieG4shxirIe2Q17k25jvB6sAXLtJ-wHpwiKoYPT.rMs8tfteo2Mq4Na519a.LDpX-A3",
+            resource: {
+              resourceType: "Condition",
+              id: "eCecTpP0.WVKMrPm76KiWieG4shxirIe2Q17k25jvB6sAXLtJ-wHpwiKoYPT.rMs8tfteo2Mq4Na519a.LDpX-A3",
+              category: [
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://terminology.hl7.org/CodeSystem/condition-category",
+                      code: "encounter-diagnosis",
+                      display: "Encounter Diagnosis",
+                    },
+                  ],
+                  text: "Encounter Diagnosis",
+                },
+                {
+                  coding: [
+                    {
+                      system:
+                        "http://open.epic.com/FHIR/StructureDefinition/condition-category",
+                      code: "visit-diagnosis",
+                      display: "Visit Diagnosis",
+                    },
+                  ],
+                  text: "Visit Diagnosis",
+                },
+              ],
+              code: {
+                coding: [
+                  {
+                    system: "http://snomed.info/sct",
+                    code: "10674791000119101",
+                    display:
+                      "Acute exacerbation of intermittent allergic asthma (disorder)",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-9-cm/diagnosis",
+                    code: "493.02",
+                    display: "Extrinsic asthma with exacerbation",
+                  },
+                  {
+                    system: "http://hl7.org/fhir/sid/icd-10-cm",
+                    code: "J45.21",
+                    display:
+                      "Mild intermittent asthma with (acute) exacerbation",
+                  },
+                ],
+                text: "Extrinsic asthma, mild intermittent, with acute exacerbation",
+              },
+              subject: {
+                reference:
+                  "Patient/ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+                display: "Gallagher, Noel",
+              },
+              encounter: {
+                reference: "Encounter/eL0PyrCZ-4638FHl.IRBvRw3",
+                identifier: {
+                  use: "usual",
+                  system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
+                  value: "8200133206",
+                },
+                display: "Office Visit",
+              },
+            },
+            search: {
+              mode: "match",
+            },
+          },
+        ],
+      };
+    }
+    if (resource.id == "edxRb2-cSfStwNNCrgw8PrQ3") {
+      encDx = {
+        resourceType: "Bundle",
+        type: "searchset",
+        total: 0,
+        link: [
+          {
+            relation: "self",
+            url: "https://epicnsproxyqa.chop.edu/fhir-dev/api/FHIR/R4/Condition?category=encounter-diagnosis&encounter=edxRb2-cSfStwNNCrgw8PrQ3&patient=ePMJA35bYO77MYu0cLg6Mi.YMkucrcmq0NHqLK9v5qqU3",
+          },
+        ],
+        entry: [
+          {
+            fullUrl: "urn:uuid:1edf7166-40ef-497f-9109-4261d975bcd7",
+            resource: {
+              resourceType: "OperationOutcome",
+              issue: [
+                {
+                  severity: "warning",
+                  code: "processing",
+                  details: {
+                    coding: [
+                      {
+                        system: "urn:oid:1.2.840.114350.1.13.20.3.7.2.657369",
+                        code: "4101",
+                        display: "Resource request returns no results.",
+                      },
+                    ],
+                    text: "Resource request returns no results.",
+                  },
+                },
+              ],
+            },
+            search: {
+              mode: "outcome",
+            },
+          },
+        ],
+      };
+    }
+
+    // console.log("encdx",encDx)
+
+    encDx.entry.forEach(function (entry) {
+      // console.log("entry", entry.resource);
+
+      // Check if the resource has already been validated
+      if (encMap[resource.id]._validDx) {
+        return;
+      }
+
+      if (entry.resource.code) {
+        // If the entry has a code, validate it
+        encMap[resource.id]._validDx = checkDx(entry.resource.code.coding);
+        // console.log("Validated DX:", encMap[resource.id]._validDx);
+      }
+    });
+
+    // console.log("Code after setTimeout");
+    // console.log(resource.id)
+
+    // deferred.push(
+    //   await search("FHIR/R4/Condition", {
+    //     patient: tokenResponse.patient,
+    //     category: "encounter-diagnosis",
+    //     encounter: resource.id,
+    //   }).then(function (encDx, state, xhr) {
+    //     try {
+
+    //       encDx.entry.forEach(function (entry) {
+    //         if (encMap[resource.id]._validDx) {
+    //           return;
+    //         }
+    //         if (entry.resource.code) {
+    //           encMap[resource.id]._validDx = checkDx(
+    //             entry.resource.code.coding
+    //           );
+    //         }
+    //       });
+
+    //       return deferred;
+    //     } catch (error) {
+    //       // chart.failure = true;
+    //       console.log(error, "error");
+    //     }
+    //   })
+    // );
   } catch (error) {
     console.log("getEncDiagnosisError ", error);
   }
-}
+};
 
 function visitReport(elem, data) {
   try {
@@ -1431,7 +2596,8 @@ async function readFileFromURL(url) {
   try {
     // console.log("hiiiiii")
     const response = await axios.get(url, { responseType: "text" });
-    console.log(response.data);
+    // console.log(response.data);
+
     return response;
   } catch (error) {
     throw new Error("Error reading file from URL: " + error.message);
@@ -1461,51 +2627,76 @@ async function readFile(input) {
 
 async function getMedAdmin() {
   try {
-    return await search(
-      "epic/2014/Clinical/Patient/GETMEDICATIONADMINISTRATIONHISTORY/MedicationAdministration",
-      JSON.stringify({
-        PatientID: tokenResponse.patient,
-        PatientIDType: "FHIR",
-        ContactID: tokenResponse.csn,
-        ContactIDType: "CSN",
-        OrderIDs: medAdminList,
-      }),
-      "POST",
-      {
-        "Content-Type": "application/json",
+    // mock data
+    medadmin.Orders.forEach(function (d) {
+      // This should never happen, but adding check
+      // just in case.
+      if (!medIdMap[d.OrderID.ID]) {
+        return;
       }
-    ).then(function (adminHistory, state, xhr) {
-      try {
-        if (!adminHistory.Orders) {
-          return;
-        }
-        adminHistory.Orders.forEach(function (d) {
-          // This should never happen, but adding check
-          // just in case.
-          if (!medIdMap[d.OrderID.ID]) {
-            return;
+      //mock data
+      d.MedicationAdministrations.forEach(function (admin) {
+        var adminDate = dateFromString(admin.AdministrationInstant);
+        if (
+          admin.AdministrationInstant &&
+          adminDate > chartConfig.chart.dates.contextStart
+        ) {
+          if (!medAdminMap[d.OrderID.ID]) {
+            medAdminMap[d.OrderID.ID] = [];
           }
-          d.MedicationAdministrations.forEach(function (admin) {
-            var adminDate = dateFromString(admin.AdministrationInstant);
-            if (
-              admin.AdministrationInstant &&
-              adminDate > chartConfig.chart.dates.contextStart
-            ) {
-              if (!medAdminMap[d.OrderID.ID]) {
-                medAdminMap[d.OrderID.ID] = [];
-              }
-              medAdminMap[d.OrderID.ID].push({
-                date: adminDate,
-                dateStr: stringFromDate(adminDate),
-              });
-            }
+          medAdminMap[d.OrderID.ID].push({
+            date: adminDate,
+            dateStr: stringFromDate(adminDate),
           });
-        });
-      } catch (error) {
-        chart.failure = true;
-        log(error.stack, "error");
-      }
+        }
+      });
     });
+
+    // return await search(
+    //   "epic/2014/Clinical/Patient/GETMEDICATIONADMINISTRATIONHISTORY/MedicationAdministration",
+    //   JSON.stringify({
+    //     PatientID: tokenResponse.patient,
+    //     PatientIDType: "FHIR",
+    //     ContactID: tokenResponse.csn,
+    //     ContactIDType: "CSN",
+    //     OrderIDs: medAdminList,
+    //   }),
+    //   "POST",
+    //   {
+    //     "Content-Type": "application/json",
+    //   }
+    // ).then(function (adminHistory, state, xhr) {
+    //   try {
+    //     if (!adminHistory.Orders) {
+    //       return;
+    //     }
+    //     adminHistory.Orders.forEach(function (d) {
+    //       // This should never happen, but adding check
+    //       // just in case.
+    //       if (!medIdMap[d.OrderID.ID]) {
+    //         return;
+    //       }
+    //       d.MedicationAdministrations.forEach(function (admin) {
+    //         var adminDate = dateFromString(admin.AdministrationInstant);
+    //         if (
+    //           admin.AdministrationInstant &&
+    //           adminDate > chartConfig.chart.dates.contextStart
+    //         ) {
+    //           if (!medAdminMap[d.OrderID.ID]) {
+    //             medAdminMap[d.OrderID.ID] = [];
+    //           }
+    //           medAdminMap[d.OrderID.ID].push({
+    //             date: adminDate,
+    //             dateStr: stringFromDate(adminDate),
+    //           });
+    //         }
+    //       });
+    //     });
+    //   } catch (error) {
+    //     chart.failure = true;
+    //     log(error.stack, "error");
+    //   }
+    // });
   } catch (error) {
     console.log(error);
   }
@@ -1513,525 +2704,4 @@ async function getMedAdmin() {
 
 module.exports = {
   buildApp,
-};
-
-var visitData = {
-  resourceType: "Bundle",
-  type: "searchset",
-  total: 47,
-  link: [
-    {
-      relation: "self",
-      url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter?patient=ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3&date=gt2018-06-15",
-    },
-  ],
-  entry: [
-    {
-      link: [
-        {
-          relation: "self",
-          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-        },
-      ],
-      fullUrl:
-        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-      resource: {
-        resourceType: "Location",
-        id: "44319901",
-        extension: [
-          {
-            valueCodeableConcept: {
-              coding: [
-                {
-                  system: ".7.10.688867.4150",
-                  code: "82",
-                },
-              ],
-            },
-          },
-        ],
-        identifier: [
-          {
-            system: ".7.2.686980",
-            value: "sjdfkjdshf",
-          },
-        ],
-        status: "arrived",
-        class: {
-          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
-          code: "5",
-          display: "Appointment",
-        },
-
-        subject: {
-          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
-          display: "Test, Healthchart",
-        },
-        participant: [
-          {
-            type: [
-              {
-                coding: [
-                  {
-                    system: "http://hl7.org/fhir/v3/ParticipationType",
-                    code: "REF",
-                    display: "referrer",
-                  },
-                ],
-                text: "referrer",
-              },
-            ],
-          },
-          {
-            period: {
-              start: "2022-05-25T14:00:00Z",
-              end: "2022-05-25T14:30:00Z",
-            },
-          },
-        ],
-        period: {
-          start: "2022-05-25T14:00:00Z",
-          end: "2022-05-25T14:30:00Z",
-        },
-        location: [
-          {
-            location: {
-              reference: "Location/44319901",
-              display: "Buerger Center Allergy",
-            },
-          },
-        ],
-      },
-      search: {
-        mode: "match",
-      },
-    },
-    {
-      link: [
-        {
-          relation: "self",
-          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-        },
-      ],
-      fullUrl:
-        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-      resource: {
-        resourceType: "Encounter",
-        id: "etPlPSTi-Ck8pFW0vJgBM6A3",
-        identifier: [
-          {
-            use: "usual",
-            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
-            value: "8700006468",
-          },
-          {
-            use: "usual",
-            type: {
-              text: "billing-number",
-            },
-            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
-            value: "8700006468",
-          },
-        ],
-        status: "arrived",
-        class: {
-          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
-          code: "5",
-          display: "Appointment",
-        },
-        type: [
-          {
-            coding: [
-              {
-                system: "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
-                code: "50",
-                display: "Appointment",
-              },
-            ],
-            text: "Appointment",
-          },
-          {
-            coding: [
-              {
-                system: "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
-                code: "3044",
-                display: "BIOLOGIC",
-              },
-            ],
-            text: "BIOLOGIC",
-          },
-        ],
-        subject: {
-          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
-          display: "Test, Healthchart",
-        },
-        participant: [
-          {
-            type: [
-              {
-                coding: [
-                  {
-                    system: "http://hl7.org/fhir/v3/ParticipationType",
-                    code: "REF",
-                    display: "referrer",
-                  },
-                ],
-                text: "referrer",
-              },
-            ],
-          },
-          {
-            period: {
-              start: "2022-05-25T14:00:00Z",
-              end: "2022-05-25T14:30:00Z",
-            },
-          },
-        ],
-        period: {
-          start: "2022-05-25T14:00:00Z",
-          end: "2022-05-25T14:30:00Z",
-        },
-        location: [
-          {
-            location: {
-              reference: "Location/44319901",
-              display: "Buerger Center Allergy",
-            },
-          },
-        ],
-      },
-      search: {
-        mode: "match",
-      },
-    },
-    {
-      link: [
-        {
-          relation: "self",
-          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-        },
-      ],
-      fullUrl:
-        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-      resource: {
-        resourceType: "Location",
-        id: "44319902",
-        extension: [
-          {
-            valueCodeableConcept: {
-              coding: [
-                {
-                  system: ".7.10.688867.4150",
-                  code: "3",
-                },
-              ],
-            },
-          },
-        ],
-        identifier: [
-          {
-            system: ".7.2.686980",
-            value: "sjdfkjdshf",
-          },
-        ],
-        status: "arrived",
-        class: {
-          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
-          code: "5",
-          display: "Appointment",
-        },
-
-        subject: {
-          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
-          display: "Test, Healthchart",
-        },
-        participant: [
-          {
-            type: [
-              {
-                coding: [
-                  {
-                    system: "http://hl7.org/fhir/v3/ParticipationType",
-                    code: "REF",
-                    display: "referrer",
-                  },
-                ],
-                text: "referrer",
-              },
-            ],
-          },
-          {
-            period: {
-              start: "2022-05-25T14:00:00Z",
-              end: "2022-05-25T14:30:00Z",
-            },
-          },
-        ],
-        period: {
-          start: "2022-05-25T14:00:00Z",
-          end: "2022-05-25T14:30:00Z",
-        },
-        location: [
-          {
-            location: {
-              reference: "Location/44319901",
-              display: "Buerger Center Allergy",
-            },
-          },
-        ],
-      },
-      search: {
-        mode: "match",
-      },
-    },
-    {
-      link: [
-        {
-          relation: "self",
-          url: "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-        },
-      ],
-      fullUrl:
-        "https://epicictdev.chop.edu/DBHI_FHIR/api/FHIR/R4/Encounter/etPlPSTi-Ck8pFW0vJgBM6A3",
-      resource: {
-        resourceType: "Encounter",
-        id: "etPlPSTi-Ck8pFW0vJgBA3",
-        identifier: [
-          {
-            use: "usual",
-            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.8",
-            value: "8700006468",
-          },
-          {
-            use: "usual",
-            type: {
-              text: "billing-number",
-            },
-            system: "urn:oid:1.2.840.114350.1.13.20.3.7.3.698084.17",
-            value: "8700006468",
-          },
-        ],
-        status: "arrived",
-        class: {
-          system: "urn:oid:1.2.840.114350.1.72.1.7.7.10.696784.13260",
-          code: "5",
-          display: "Appointment",
-        },
-        type: [
-          {
-            coding: [
-              {
-                system: "urn:oid:1.2.840.114350.1.13.20.3.7.10.698084.30",
-                code: "50",
-                display: "Appointment",
-              },
-            ],
-            text: "Appointment",
-          },
-          {
-            coding: [
-              {
-                system: "urn:oid:1.2.840.114350.1.13.20.3.7.2.808267",
-                code: "3044",
-                display: "BIOLOGIC",
-              },
-            ],
-            text: "BIOLOGIC",
-          },
-        ],
-        subject: {
-          reference: "Patient/ekjU0fvs8A7FYLta98rqLH8BFreepNIUI9D6VaroJyFU3",
-          display: "Test, Healthchart",
-        },
-        participant: [
-          {
-            type: [
-              {
-                coding: [
-                  {
-                    system: "http://hl7.org/fhir/v3/ParticipationType",
-                    code: "REF",
-                    display: "referrer",
-                  },
-                ],
-                text: "referrer",
-              },
-            ],
-          },
-          {
-            period: {
-              start: "2023-05-25T14:00:00Z",
-              end: "2023-05-25T14:30:00Z",
-            },
-          },
-        ],
-        period: {
-          start: "2023-05-25T14:00:00Z",
-          end: "2023-05-25T14:30:00Z",
-        },
-        location: [
-          {
-            location: {
-              reference: "Location/44319902",
-              display: "Buerger Center Allergy",
-            },
-          },
-        ],
-      },
-      search: {
-        mode: "match",
-      },
-    },
-    {
-      resource: {
-        resourceType: "Encounter",
-        id: 1,
-        status: "unknown",
-      },
-    },
-    {
-      resource: {
-        resourceType: "Encounter",
-        id: 2,
-        status: "arrived",
-
-        period: {
-          start: "2023-08-10T10:00:00",
-          end: "2023-08-15T18:30:00",
-        },
-        identifier: [
-          {
-            system: ".7.3.698084.8",
-            value: "value",
-          },
-        ],
-        type: [
-          {
-            coding: [
-              {
-                system: ".7.10.698084.30",
-                code: "3",
-                display: "",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Encounter",
-        id: 3,
-        status: "in-progress",
-
-        period: {
-          start: "2023-08-10T10:00:00",
-          end: "2023-08-15T18:30:00",
-        },
-        identifier: [
-          {
-            system: ".7.3.698084.8",
-            value: "value",
-          },
-        ],
-        type: [
-          {
-            coding: [
-              {
-                system: ".7.10.698084.10110",
-                code: "1",
-                display: "",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Encounter",
-        id: 4,
-        status: "in-progress",
-
-        period: {
-          start: "2023-01-10T10:00:00",
-          end: "2023-01-15T18:30:00",
-        },
-        identifier: [
-          {
-            system: ".7.3.698084.8",
-            value: "value",
-          },
-        ],
-        type: [
-          {
-            coding: [
-              {
-                system: ".7.10.698084.10110",
-                code: "5",
-                display: "Florida",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Encounter",
-        id: 5,
-        status: "in-progress",
-
-        period: {
-          start: "2022-08-10T10:00:00",
-          end: "2022-08-15T18:30:00",
-        },
-        identifier: [
-          {
-            system: ".7.3.698084.8",
-            value: "value",
-          },
-        ],
-        type: [
-          {
-            coding: [
-              {
-                system: ".7.10.698084.10110",
-                code: "3",
-                display: "Florida",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Location",
-        id: 2,
-        name: "name",
-        extension: [
-          {
-            valueCodeableConcept: {
-              coding: [
-                {
-                  system: "",
-                  code: 34,
-                  display: "something display",
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-    {
-      resource: {
-        resourceType: "Location",
-        id: 3,
-        name: "name",
-        identifier: [{ value: "random value" }],
-      },
-    },
-  ],
 };

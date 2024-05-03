@@ -12,7 +12,8 @@ var {
     today,
     getTokenResponse,
     setState,
-    getState
+    getState,
+    getSessionStorage
     
   } = require('./chopShared')
 // import customHosts from "./customHosts.js";
@@ -24,7 +25,8 @@ let tokenResponse;
 
 function getExternalEncounters(encounters) {
     tokenResponse = getTokenResponse;
-    return search(customHosts[sessionStorage.getItem("env")] + "CHOP/2021/CHOP/Clinical/EncounterReference", {
+    sessionStorage = getSessionStorage()
+    return search(customHosts[sessionStorage["env"]] + "CHOP/2021/CHOP/Clinical/EncounterReference", {
         patientID: tokenResponse.eptId,
         date: "gt" + chartConfig.chart.dates.contextStart.toISOString().slice(0,10)
     }).then(function(encounters, state, xhr) {
@@ -52,6 +54,7 @@ function checkExternalDx(dx) {
 }
 
 function filterExternalEncounters() {
+   
     extEncounters.filter(function(entry, i) {
         var start = new Date(entry.effectiveTime.low);
         if (start < today && checkExternalDx(entry.description)) {
@@ -135,6 +138,7 @@ function filterExternalEncounters() {
                 ]
             };
 
+            
             // Add data to HealthChart config
             chartConfig.rows[chartConfig.rowMap[entry.row]].data.push(encObj);
 
