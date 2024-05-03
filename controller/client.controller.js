@@ -67,6 +67,7 @@ const checkClientIdController = async (req,res) =>{
         req.allowcustomhosts = response[0].allowcustomhosts
 
         const config = await clientService.getConfigFilePathService(req.clientId)
+        console.log(config)
         
         req.config = config.rows[0]
         // console.log("heloo",response)
